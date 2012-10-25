@@ -17,6 +17,7 @@ sub params {
 }
 
 sub param {
+    '=controller='
 }
 
 

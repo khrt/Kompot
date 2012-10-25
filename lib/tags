@@ -7,10 +7,9 @@
 FWfwd	FWfwd.pm	/^package FWfwd v0.0.1;$/;"	p
 FWfwd::App	FWfwd/App.pm	/^package FWfwd::App;$/;"	p
 FWfwd::Base	FWfwd/Base.pm	/^package FWfwd::Base;$/;"	p
-FWfwd::Base	FWfwd/Handler/Plack.pm	/^package FWfwd::Base;$/;"	p
+FWfwd::Config	FWfwd/Config.pm	/^package FWfwd::Config;$/;"	p
 FWfwd::Controller	FWfwd/Controller.pm	/^package FWfwd::Controller;$/;"	p
 FWfwd::Handler	FWfwd/Handler.pm	/^package FWfwd::Handler;$/;"	p
-FWfwd::PSGI	FWfwd/Handler/PSGI.pm	/^package FWfwd::PSGI;$/;"	p
 FWfwd::Renderer	FWfwd/Renderer.pm	/^package FWfwd::Renderer;$/;"	p
 FWfwd::Renderer::EPL	FWfwd/Renderer/EPL.pm	/^package FWfwd::Renderer::EPL;$/;"	p
 FWfwd::Renderer::JSON	FWfwd/Renderer/JSON.pm	/^package FWfwd::Renderer::JSON;$/;"	p
@@ -26,21 +25,22 @@ config	FWfwd/App.pm	/^sub config  { state $_config ||= FWfwd::Config->load }$/;"
 delete	FWfwd.pm	/^sub delete { }$/;"	s
 dispatch	FWfwd/Routes.pm	/^sub dispatch {$/;"	s
 get	FWfwd.pm	/^sub get {$/;"	s
+get	FWfwd/Config.pm	/^sub get {$/;"	s
 get_route_by_path	FWfwd/Routes.pm	/^sub get_route_by_path {$/;"	s
 handle_request	FWfwd/Handler.pm	/^sub handle_request {$/;"	s
+head	FWfwd.pm	/^sub head { }$/;"	s
 import	FWfwd.pm	/^sub import {$/;"	s
 init	FWfwd/Base.pm	/^sub init { 1 }$/;"	s
-init	FWfwd/Handler/Plack.pm	/^sub init { 1 }$/;"	s
 init	FWfwd/Routes.pm	/^sub init {$/;"	s
 init	FWfwd/Routes/Route.pm	/^sub init {$/;"	s
 init_request_headers	FWfwd/Handler.pm	/^sub init_request_headers {$/;"	s
+load	FWfwd/Config.pm	/^sub load {$/;"	s
 method	FWfwd/Routes/Route.pm	/^sub method { uc( shift->{method} ) }$/;"	s
 new	FWfwd/Base.pm	/^sub new {$/;"	s
-new	FWfwd/Handler/Plack.pm	/^sub new {$/;"	s
 param	FWfwd/Controller.pm	/^sub param {$/;"	s
 params	FWfwd/Controller.pm	/^sub params {$/;"	s
 path	FWfwd/Routes/Route.pm	/^sub path   { shift->{path} }$/;"	s
-post	FWfwd.pm	/^sub post {$/;"	s
+post	FWfwd.pm	/^sub post { }$/;"	s
 process_request	FWfwd/Handler.pm	/^sub process_request {$/;"	s
 psgi_app	FWfwd/Handler.pm	/^sub psgi_app {$/;"	s
 put	FWfwd.pm	/^sub put { }$/;"	s

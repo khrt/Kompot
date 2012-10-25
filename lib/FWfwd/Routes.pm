@@ -10,7 +10,7 @@ use utf8;
 use Carp;
 use DDP;
 
-use base 'FWfwd::App';
+use base 'FWfwd::Base';
 
 use FWfwd::Routes::Route;
 
@@ -26,24 +26,29 @@ sub init {
 sub add {
     my $self = shift;
 
-    my $route = 
-        FWfwd::Routes::Route->new( {
-            method => $_[0],
-            path   => $_[1],
-            code   => $_[2],
-        } );
+    my ( $methods, $path, $code ) = @_;
 
-    push( @{ $self->{routes} }, $route );
+    foreach my $method ( @$methods ) {
+        my $route = 
+            FWfwd::Routes::Route->new( {
+                method => $method,
+
+                path   => $path,
+                code   => $code,
+            } );
+
+        push( @{ $self->{routes} }, $route );
+    }
 }
 
 
 
 sub routes {
-    map { { $_->method => $_->path } } @{ shift->{routes} }
+    map { { method => $_->method, path => $_->path } } @{ shift->{routes} }
 }
 
 
-sub get_route_by_path {
+sub find {
     my ( $self, $method, $path ) = @_;
 
     grep { $_->method eq uc($method) && $_->path eq $path } @{ shift->{routes} }
@@ -53,20 +58,35 @@ sub get_route_by_path {
 sub dispatch {
     my ( $self, $method, $path ) = @_;
 
-    my ($route) = $self->get_route_by_path( $method, $path );
+    my ($route) = $self->find( $method, $path );
+say 'route:';
 p $route;
 
-    croak "No route to `$path` via " . uc($method) if not defined($route);
+    if ( not defined($route) ) {
+
+        my $errmsg = <<EOF;
+No route to `$path` via ${ \uc($method) }.\n
+Available routes:
+EOF
+        my @routes = $self->routes;
+        foreach ( @routes ) {
+            $errmsg .= $_->{method} . "\t=> " . $_->{path} . "\n";
+        }
+
+        croak $errmsg;
+    }
+
 
     # cache here
     #
     # end
 
-    my @r = $route->code->( FWfwd::Controller->new );
-p @r;
+    my $response = $route->code->( FWfwd::Controller->new );
+say 'result from controller';
+p $response;
 
 
-    return @r;
+    return $response;
 }
 
 

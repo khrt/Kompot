@@ -53,19 +53,19 @@ sub render {
     my $json = delete( $p->{json} );
 
 
-    my ( $ctype, $content );
 
+    my $response;
 
     # Text
     if ( defined($text) ) {
 
-        ( $ctype, $content ) = FWfwd::Renderer::Plain->new->render( text => $text, params => $p );
+        my $response = FWfwd::Renderer::Plain->new->render( text => $text, params => $p );
 
     }
     # JSON
     elsif ( defined($json) ) {
 
-        ( $ctype, $content ) = FWfwd::Renderer::JSON->new->render( json => $json );
+        my $response = FWfwd::Renderer::JSON->new->render( json => $json );
 
     }
     # Template
@@ -74,7 +74,7 @@ sub render {
     }
 
 
-    return $ctype, $content;
+    return $response;
 }
 
 

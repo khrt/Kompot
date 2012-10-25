@@ -17,9 +17,11 @@ sub render {
 
     my $p = { @_ };
 
-    my $json = encode_json( $p->{json} );
-
-    return 'application/json', $json;
+    return {
+        status  => 200,
+        headers => [ 'content-type' => 'application/json' ],
+        content => [ encode_json( $p->{json} ) ],
+    };
 }
 
 

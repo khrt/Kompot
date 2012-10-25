@@ -44,18 +44,18 @@ our @EXPORT = qw(
     start
 );
 
+sub _app { FWfwd::App->app }
 
 ###
 
 
-sub get {
-    FWfwd::App->app->route->add( 'get', @_ )
-}
+sub delete { _app->route->add( ['delete'], @_ ) }
+sub get    { _app->route->add( ['get'],    @_ ) }
+sub head   { _app->route->add( ['head'],   @_ ) }
+sub post   { _app->route->add( ['post'],   @_ ) }
+sub put    { _app->route->add( ['put'],    @_ ) }
 
-sub put { }
-sub post { }
-sub delete { }
-sub head { }
+sub any    { _app->route->add(@_) }
 
 ###
 
@@ -78,25 +78,13 @@ sub import {
 
 sub _start {
     my $self = shift;
-#p $self;
 
-
-    my $app = FWfwd::App->app;
+    my $app = _app;
 
     my $response = $app->run;
 #p $response;
 
     return $response;
-
-
-
-
-    my @r;
-    @r = $app->routes->dispatch( get => '/' );
-#    @r = $app->routes->dispatch('/json');
-p @r;
-
-    return [ 200, [ $r[0] ], [ $r[1] ] ];
 }
 
 

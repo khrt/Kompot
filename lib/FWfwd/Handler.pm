@@ -8,6 +8,7 @@ use warnings;
 use utf8;
 
 use DDP;
+use Carp;
 
 use Plack::Request;
 
@@ -30,16 +31,13 @@ sub psgi_app {
 
     sub {
         my $env = shift;
-p($env);
 
-        my $he = $self->init_request_headers($env);
-
-        return [ 200, [ 'Content-Type' => 'text/plain' ], [ p($env), "\r\n", p($he) ] ];
-
+#        my $he = $self->init_request_headers($env);
+#        return [ 200, [ 'Content-Type' => 'text/plain' ], [ p($env), "\r\n", p($he) ] ];
 #        my $request = Dancer::Request->new(env => $env);
 #        $self->handle_request($request);
+        $self->handle_request($env);
     };
-
 }
 
 
@@ -58,7 +56,7 @@ sub init_request_headers {
 sub handle_request {
     my ( $self, $request ) = @_;
 
-    my $ip_addr = $request->remote_address || '-';
+#    my $ip_addr = $request->remote_address || '-';
 
 #    Dancer::SharedData->reset_all( reset_vars => !$request->is_forward);
 
@@ -81,57 +79,89 @@ sub handle_request {
 #    }
 
 
-    $self->process_request( $request );
+    my $response = $self->process_request( $request );
+
+    return [
+        $response->{status},
+        $response->{headers},
+        $response->{content},
+    ];
 
 
-    return $self->render_response;
+#    return $self->render_response;
 }
 
 
 sub process_request {
-    my ( $self, $request ) = @_;
+    my ( $self, $req ) = @_;
 
-    my $action;
 
-    $action = try {
-               Dancer::Renderer->render_file
-            || Dancer::Renderer->render_action
-            || Dancer::Renderer->render_autopage
-            || Dancer::Renderer->render_error(404);
-    }
-    continuation {
-        # workflow exception (continuation)
-        my ($continuation) = @_;
+    my $app = FWfwd::App->app;
 
-        $continuation->isa('Dancer::Continuation::Halted')
-            or $continuation->rethrow();
+    my $response;
 
-      # special case for halted workflow continuation: still render the response
-        Dancer::Serializer->process_response( Dancer::SharedData->response );
-    }
-    catch {
-        my ($exception) = @_;
-
-        Dancer::Factory::Hook->execute_hooks( 'on_handler_exception', $exception );
-
-        Dancer::Logger::error(
-            sprintf(
-                'request to %s %s crashed: %s',
-                $request->method, $request->path_info, $exception
-            ) );
-
-        # use stringification, to get exception message in case of a
-        # Dancer::Exception
-        Dancer::Error->new(
-            code      => 500,
-            title     => "Runtime Error",
-            message   => "$exception",
-            exception => $exception,
-        )->render();
+    eval {
+        $response =
+            $app->routes->dispatch(
+                $req->{REQUEST_METHOD},
+                $req->{REQUEST_URI}
+            );
     };
 
-    return $action;
+    if ( $@ ) {
+        return {
+            status  => 500,
+            headers => [ 'content-type' => 'text/plain' ],
+            content => [ $@ ],
+        };
+    }
+
+    return $response;
+
+
+#    $action = try {
+#               Dancer::Renderer->render_file
+#            || Dancer::Renderer->render_action
+#            || Dancer::Renderer->render_autopage
+#            || Dancer::Renderer->render_error(404);
+#    }
+#    continuation {
+#        # workflow exception (continuation)
+#        my ($continuation) = @_;
+#
+#        $continuation->isa('Dancer::Continuation::Halted')
+#            or $continuation->rethrow();
+#
+#      # special case for halted workflow continuation: still render the response
+#        Dancer::Serializer->process_response( Dancer::SharedData->response );
+#    }
+#    catch {
+#        my ($exception) = @_;
+#
+#        Dancer::Factory::Hook->execute_hooks( 'on_handler_exception', $exception );
+#
+#        Dancer::Logger::error(
+#            sprintf(
+#                'request to %s %s crashed: %s',
+#                $request->method, $request->path_info, $exception
+#            ) );
+#
+#        # use stringification, to get exception message in case of a
+#        # Dancer::Exception
+#        Dancer::Error->new(
+#            code      => 500,
+#            title     => "Runtime Error",
+#            message   => "$exception",
+#            exception => $exception,
+#        )->render();
+#    };
+#
+#    return $action;
 }
+
+
+
+
 
 
 sub render_response {

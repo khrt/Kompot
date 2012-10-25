@@ -37,6 +37,19 @@ get '/json' => sub {
     $self->render( json => $data );
 };
 
+get '/to-post' => sub {
+    my $self = shift;
+
+    my $form = <<EOF;
+to post<br>
+<form action="/post" method="post">
+<input type="submit">
+</form>
+EOF
+
+    $self->render( text => $form, 'content-type' => 'text/html' );
+};
+
 
 post '/post' => sub {
     my $self = shift;
