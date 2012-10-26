@@ -7,17 +7,27 @@ use warnings;
 
 use utf8;
 
+use DDP { output => 'stdout' };
+
 use base 'FWfwd::Base';
 
 use FWfwd::Renderer;
 
+sub init {
+    my $self = shift;
+
+    $self->{req} = shift;
+}
+
+sub req { shift->{req} }
 
 
 sub params {
 }
 
-sub param {
-    '=controller='
+sub param { 
+    my ( $self, $param ) = @_;
+    return $self->req->param($param);
 }
 
 
@@ -35,9 +45,7 @@ sub stash {
     # new
     my $v = @_ % 2 ? $_[0] : { @_ };
 
-    for my $k ( keys %$v ) {
-        $stash->{$k} = $v->{$k};
-    }
+    map { $stash->{$_} = $v->{$_} } keys %$v;
 
     return 1;
 }
@@ -55,7 +63,7 @@ sub render {
     my $json = $p->{json};
 
 
-    my $app = FWfwd::App->app;
+    my $app = $self->app;
 
     $app->renderer->render( $self, $p);
 }

@@ -21,6 +21,12 @@ sub new {
 sub init { 1 }
 
 
+
+sub app { state $_app ||= FWfwd::App->new }
+
+sub name { 'EFW v' . $FWfwd::VERSION }
+
+
 1;
 
 __END__

@@ -1,4 +1,4 @@
-package FWfwd v0.0.1;
+package FWfwd;
 
 use v5.12;
 
@@ -7,61 +7,28 @@ use warnings;
 
 use utf8;
 
+our $VERSION = '0.0.1';
+
 # FINDBIN
 use FindBin;
 use lib $FindBin::Bin;
 # END
 
-use DDP;
-
+use DDP output => 'stdout';
 
 use File::Spec;
 
-
 use FWfwd::App;
-#use FWfwd::Config;
-
-use FWfwd::Controller;
-
-use FWfwd::Renderer;
-use FWfwd::Routes;
-
-#use FWfwd::Cookie;
-#use FWfwd::Session;
-#
-#use FWfwd::Handler;
-#
-#use FWfwd::MIME;
 
 
 use base 'Exporter';
 
 our @EXPORT = qw(
-    get put post delete
 
-    param params
+    delete get head options post put any
 
-    start
+    app start
 );
-
-sub _app { FWfwd::App->app }
-
-###
-
-
-sub delete { _app->route->add( ['delete'], @_ ) }
-sub get    { _app->route->add( ['get'],    @_ ) }
-sub head   { _app->route->add( ['head'],   @_ ) }
-sub post   { _app->route->add( ['post'],   @_ ) }
-sub put    { _app->route->add( ['put'],    @_ ) }
-
-sub any    { _app->route->add(@_) }
-
-###
-
-sub start { goto &_start }
-
-###
 
 sub import {
     my ( $class, @args ) = @_;
@@ -73,22 +40,25 @@ sub import {
     $class->export_to_level( 1, $class, qw() );
 }
 
+sub _app   { FWfwd::App->app }
+sub _start { _app->run }
 
 ###
 
-sub _start {
-    my $self = shift;
+sub app   { __PACKAGE__ }
+sub start { goto &_start }
 
-    my $app = _app;
+sub delete  { _app->route->add( ['delete'],  @_ ) }
+sub get     { _app->route->add( ['get'],     @_ ) }
+sub head    { _app->route->add( ['head'],    @_ ) }
+sub options { _app->route->add( ['options'], @_ ) }
+sub post    { _app->route->add( ['post'],    @_ ) }
+sub put     { _app->route->add( ['put'],     @_ ) }
 
-    my $response = $app->run;
-#p $response;
-
-    return $response;
-}
-
+sub any     { _app->route->add(@_) }
 
 
 1;
 
 __END__
+

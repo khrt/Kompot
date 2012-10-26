@@ -7,7 +7,7 @@ use warnings;
 
 use utf8;
 
-use DDP;
+use DDP { output => 'stdout' };
 
 use base 'FWfwd::Base';
 
@@ -20,16 +20,26 @@ use FWfwd::Handler;
 
 
 
-sub app { state $_app ||= FWfwd::App->new }
+use FWfwd::Controller;
+
+#use FWfwd::Cookie;
+#use FWfwd::Session;
+#
+#use FWfwd::Handler;
+#
+#use FWfwd::MIME;
+
+
 
 #sub controller { state $_controller ||= FWfwd::Controller->new }
-sub renderer   { state $_renderer   ||= FWfwd::Renderer->new }
 
-sub routes  { state $_route ||= FWfwd::Routes->new }
-sub route   { goto &routes }
+sub renderer { state $_renderer ||= FWfwd::Renderer->new }
+sub render   { goto &renderer }
 
-sub config  { state $_config ||= FWfwd::Config->load }
-sub conf    { goto &config }
+sub routes { state $_route ||= FWfwd::Routes->new }
+sub route  { goto &routes }
+
+sub config { state $_config ||= FWfwd::Config->load }
 
 #
 

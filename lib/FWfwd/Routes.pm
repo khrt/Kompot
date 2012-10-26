@@ -8,10 +8,11 @@ use warnings;
 use utf8;
 
 use Carp;
-use DDP;
+use DDP { output => 'stdout' };
 
 use base 'FWfwd::Base';
 
+use FWfwd::Request;
 use FWfwd::Routes::Route;
 
 
@@ -28,11 +29,12 @@ sub add {
 
     my ( $methods, $path, $code ) = @_;
 
+    $methods = [ $methods ] if not ref($methods);
+
     foreach my $method ( @$methods ) {
         my $route = 
             FWfwd::Routes::Route->new( {
                 method => $method,
-
                 path   => $path,
                 code   => $code,
             } );
@@ -56,37 +58,53 @@ sub find {
 
 
 sub dispatch {
-    my ( $self, $method, $path ) = @_;
+    my ( $self, $env ) = @_;
 
-    my ($route) = $self->find( $method, $path );
+    my $req = FWfwd::Request->new($env);
+
+
+    my ($route) = $self->find( $req->method, $req->path );
 say 'route:';
 p $route;
 
     if ( not defined($route) ) {
 
-        my $errmsg = <<EOF;
-No route to `$path` via ${ \uc($method) }.\n
-Available routes:
-EOF
+        # TODO try to render static file
+        #      otherwise - 404
+        #$self->app->renderer->render_static( $path );
+
+        my $errmsg =
+              'No route to `' . $req->path . '` via '
+            . uc( $req->method )
+            . ".\nAvailable routes:\n";
+
         my @routes = $self->routes;
+
         foreach ( @routes ) {
             $errmsg .= $_->{method} . "\t=> " . $_->{path} . "\n";
         }
 
-        croak $errmsg;
+#        croak $errmsg;
+
+        my $r = $self->app->render->not_found($errmsg);
+
+say '404';
+p $r;
+        return $r;
     }
 
 
     # cache here
-    #
+    # return cached
+
+    # return new && TODO cache
+    my $r = $route->code->( FWfwd::Controller->new($req) );
     # end
 
-    my $response = $route->code->( FWfwd::Controller->new );
-say 'result from controller';
-p $response;
+#say 'result from controller';
+#p $r;
 
-
-    return $response;
+    return $r;
 }
 
 

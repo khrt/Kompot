@@ -7,10 +7,8 @@ use warnings;
 
 use utf8;
 
-use DDP;
+use DDP { output => 'stdout' };
 use Carp;
-
-use Plack::Request;
 
 use base 'FWfwd::Base';
 
@@ -32,199 +30,64 @@ sub psgi_app {
     sub {
         my $env = shift;
 
-#        my $he = $self->init_request_headers($env);
-#        return [ 200, [ 'Content-Type' => 'text/plain' ], [ p($env), "\r\n", p($he) ] ];
 #        my $request = Dancer::Request->new(env => $env);
 #        $self->handle_request($request);
-        $self->handle_request($env);
+
+        $self->process_request($env);
     };
-}
-
-
-sub init_request_headers {
-    my ( $self, $env ) = @_;
-
-    my $plack = Plack::Request->new($env);
-#p($plack);
-
-#    Dancer::SharedData->headers( $plack->headers );
-}
-
-
-
-
-sub handle_request {
-    my ( $self, $request ) = @_;
-
-#    my $ip_addr = $request->remote_address || '-';
-
-#    Dancer::SharedData->reset_all( reset_vars => !$request->is_forward);
-
-
-    # save the request object
-#    Dancer::SharedData->request($request);
-
-
-    # deserialize the request body if possible
-#    $request = Dancer::Serializer->process_request($request)
-#      if Dancer::App->current->setting('serializer');
-
-
-
-    # read cookies from client
-#    Dancer::Cookies->init;
-
-#    if (Dancer::Config::setting('auto_reload')) {
-#        Dancer::App->reload_apps;
-#    }
-
-
-    my $response = $self->process_request( $request );
-
-    return [
-        $response->{status},
-        $response->{headers},
-        $response->{content},
-    ];
-
-
-#    return $self->render_response;
 }
 
 
 sub process_request {
-    my ( $self, $req ) = @_;
+    my ( $self, $env ) = @_;
+
+#p $env;
+
+#    Dancer::SharedData->reset_all( reset_vars => !$request->is_forward);
+
+    # read cookies from client
+#    Dancer::Cookies->init;
 
 
-    my $app = FWfwd::App->app;
+    my $app = $self->app;
 
     my $response;
 
     eval {
-        $response =
-            $app->routes->dispatch(
-                $req->{REQUEST_METHOD},
-                $req->{REQUEST_URI}
-            );
+        $response = $app->routes->dispatch($env);
     };
 
+
     if ( $@ ) {
-        return {
-            status  => 500,
-            headers => [ 'content-type' => 'text/plain' ],
-            content => [ $@ ],
-        };
+        my $r = $self->app->render->internal_error($@);
+        return $self->render_response($r);
     }
 
-    return $response;
+    if ( !$response ) {
+        croak 'no reponse';
+    }
 
 
-#    $action = try {
-#               Dancer::Renderer->render_file
-#            || Dancer::Renderer->render_action
-#            || Dancer::Renderer->render_autopage
-#            || Dancer::Renderer->render_error(404);
-#    }
-#    continuation {
-#        # workflow exception (continuation)
-#        my ($continuation) = @_;
-#
-#        $continuation->isa('Dancer::Continuation::Halted')
-#            or $continuation->rethrow();
-#
-#      # special case for halted workflow continuation: still render the response
-#        Dancer::Serializer->process_response( Dancer::SharedData->response );
-#    }
-#    catch {
-#        my ($exception) = @_;
-#
-#        Dancer::Factory::Hook->execute_hooks( 'on_handler_exception', $exception );
-#
-#        Dancer::Logger::error(
-#            sprintf(
-#                'request to %s %s crashed: %s',
-#                $request->method, $request->path_info, $exception
-#            ) );
-#
-#        # use stringification, to get exception message in case of a
-#        # Dancer::Exception
-#        Dancer::Error->new(
-#            code      => 500,
-#            title     => "Runtime Error",
-#            message   => "$exception",
-#            exception => $exception,
-#        )->render();
-#    };
-#
-#    return $action;
+    return $self->render_response( $response );
 }
-
-
-
-
 
 
 sub render_response {
     my $self = shift;
-
-    my $response = Dancer::SharedData->response();
-
-    my $content = $response->content;
-
-
-
-
-    unless ( ref($content) eq 'GLOB' ) {
-        my $charset = setting('charset');
-        my $ctype   = $response->header('Content-Type');
-
-        if ( $charset && $ctype && _is_text($ctype) ) {
-            $content = Encode::encode( $charset, $content )
-                unless $response->_already_encoded;
-            $response->header( 'Content-Type' => "$ctype; charset=$charset" )
-                if $ctype !~ /$charset/;
-        }
-        $response->header( 'Content-Length' => length($content) )
-            if !defined $response->header('Content-Length');
-        $content = [$content];
-    }
-    else {
-        if ( !defined $response->header('Content-Length') ) {
-            my $stat = stat $content;
-            $response->header( 'Content-Length' => $stat->size );
-        }
-    }
-
-
-
-
-    # drop content if request is HEAD
-    $content = ['']
-        if ( defined Dancer::SharedData->request
-        && Dancer::SharedData->request->is_head() );
-
+    my $r = shift;
 
     # drop content AND content_length if reponse is 1xx or (2|3)04
-    if ( $response->status =~ (/^[23]04$/) ) {
-        $content = [''];
-        $response->header( 'Content-Length' => 0 );
+    if ( $r->status =~ /^(?:2|3)04$/ ) {
+        $r->{content} = [''];
+        $r->header( 'content-length' => 0 );
     }
 
+    # drop content if request is HEAD
+#    $content = ['']
+#        if ( defined Dancer::SharedData->request
+#        && Dancer::SharedData->request->is_head() );
 
-    Dancer::Logger::core( "response: " . $response->status );
-
-
-    my $status  = $response->status();
-    my $headers = $response->headers_to_array();
-
-
-    # reverse streaming
-    if ( ref $response->streamed and ref $response->streamed eq 'CODE' ) {
-        return $response->streamed->( $status, $headers );
-    }
-
-
-    return [ $status, $headers, $content ];
+    return [ $r->status, $r->headers, $r->content ];
 }
 
 

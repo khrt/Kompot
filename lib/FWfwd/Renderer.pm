@@ -7,14 +7,16 @@ use warnings;
 
 use utf8;
 
-use DDP;
+use DDP { output => 'stdout' };
 use Carp;
 
 use base 'FWfwd::Base';
 
 use FWfwd::Renderer::EPL;
-use FWfwd::Renderer::Plain;
+use FWfwd::Renderer::Text;
 use FWfwd::Renderer::JSON;
+
+use FWfwd::Response;
 
 
 
@@ -49,32 +51,106 @@ sub render {
 
 
     
-    my $text = delete( $p->{text} );
-    my $json = delete( $p->{json} );
+    my $json     = delete( $p->{json} );
+    my $template = delete( $p->{template} );
+    my $text     = delete( $p->{text} );
 
 
 
-    my $response;
+    my ( $type, $data );
 
-    # Text
-    if ( defined($text) ) {
-
-        my $response = FWfwd::Renderer::Plain->new->render( text => $text, params => $p );
-
-    }
     # JSON
-    elsif ( defined($json) ) {
+    if ( defined($json) ) {
+        ( $type, $data ) = FWfwd::Renderer::JSON->new->render( json => $json );
+    }
+    elsif ( defined($template) ) {
 
-        my $response = FWfwd::Renderer::JSON->new->render( json => $json );
+        # Mojo::Template
+        # TT2
+        # ???
+        croak 'renderer not defined';
 
     }
-    # Template
+    # Text
+    elsif ( defined($text) ) {
+        ( $type, $data ) = FWfwd::Renderer::Text->new->render( text => $text, params => $p );
+    }
     else {
-
+        croak 'internal error';
+        return;
     }
 
+    my $r = FWfwd::Response->new;
 
-    return $response;
+    $r->status(200);
+
+    $r->header(
+        'content-type'   => $type,
+        'content-length' => length($data),
+
+        'x-powered-by'   => $self->app->name,
+    );
+
+    $r->content($data);
+
+    return $r;
+}
+
+
+sub render_static {
+    my ( $self, $path ) = @_;
+
+    return;
+}
+
+
+sub not_found {
+    my $self  = shift;
+    my $error = shift;
+
+    my $type = 'text/plain';
+
+    my $r = FWfwd::Response->new;
+
+    $r->status(404);
+
+    $r->header(
+        'content-type'   => $type,
+        'content-length' => length($error),
+
+        'x-powered-by'   => $self->app->name,
+    );
+
+    $r->content($error);
+
+    return $r;
+}
+
+sub internal_error {
+    my $self  = shift;
+    my $error = shift;
+
+    my $r = FWfwd::Response->new;
+
+    $r->status(500);
+
+    $r->header(
+        'content-type'   => 'text/plain',
+        'content-length' => length($error),
+
+        'x-powered-by'   => $self->app->name,
+    );
+
+    $r->content($error);
+
+    return $r;
+}
+
+
+
+sub _is_text {
+    my ( $self, $content_type ) = @_;
+    return $content_type =~ /(x(?:ht)?ml|text|json|javascript)/;
 }
 
 

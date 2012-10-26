@@ -4,7 +4,7 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.8	//
-FWfwd	FWfwd.pm	/^package FWfwd v0.0.1;$/;"	p
+FWfwd	FWfwd.pm	/^package FWfwd;$/;"	p
 FWfwd::App	FWfwd/App.pm	/^package FWfwd::App;$/;"	p
 FWfwd::Base	FWfwd/Base.pm	/^package FWfwd::Base;$/;"	p
 FWfwd::Config	FWfwd/Config.pm	/^package FWfwd::Config;$/;"	p
@@ -13,47 +13,77 @@ FWfwd::Handler	FWfwd/Handler.pm	/^package FWfwd::Handler;$/;"	p
 FWfwd::Renderer	FWfwd/Renderer.pm	/^package FWfwd::Renderer;$/;"	p
 FWfwd::Renderer::EPL	FWfwd/Renderer/EPL.pm	/^package FWfwd::Renderer::EPL;$/;"	p
 FWfwd::Renderer::JSON	FWfwd/Renderer/JSON.pm	/^package FWfwd::Renderer::JSON;$/;"	p
-FWfwd::Renderer::Plain	FWfwd/Renderer/Plain.pm	/^package FWfwd::Renderer::Plain;$/;"	p
+FWfwd::Renderer::Text	FWfwd/Renderer/Text.pm	/^package FWfwd::Renderer::Text;$/;"	p
+FWfwd::Request	FWfwd/Request.pm	/^package FWfwd::Request;$/;"	p
+FWfwd::Response	FWfwd/Response.pm	/^package FWfwd::Response;$/;"	p
 FWfwd::Routes	FWfwd/Routes.pm	/^package FWfwd::Routes;$/;"	p
 FWfwd::Routes::Route	FWfwd/Routes/Route.pm	/^package FWfwd::Routes::Route;$/;"	p
-_start	FWfwd.pm	/^sub _start {$/;"	s
+_app	FWfwd.pm	/^sub _app   { FWfwd::App->app }$/;"	s
+_is_text	FWfwd/Renderer.pm	/^sub _is_text {$/;"	s
+_parse_params_get	FWfwd/Request.pm	/^sub _parse_params_get {$/;"	s
+_parse_params_post	FWfwd/Request.pm	/^sub _parse_params_post {$/;"	s
+_read	FWfwd/Request.pm	/^sub _read {$/;"	s
+_start	FWfwd.pm	/^sub _start { _app->run }$/;"	s
+_url_decode	FWfwd/Request.pm	/^sub _url_decode {$/;"	s
 add	FWfwd/Routes.pm	/^sub add {$/;"	s
-app	FWfwd/App.pm	/^sub app { state $_app ||= FWfwd::App->new }$/;"	s
+any	FWfwd.pm	/^sub any     { _app->route->add(@_) }$/;"	s
+app	FWfwd.pm	/^sub app   { __PACKAGE__ }$/;"	s
+app	FWfwd/Base.pm	/^sub app { state $_app ||= FWfwd::App->new }$/;"	s
 code	FWfwd/Routes/Route.pm	/^sub code   { shift->{code} }$/;"	s
-conf	FWfwd/App.pm	/^sub conf    { goto &config }$/;"	s
-config	FWfwd/App.pm	/^sub config  { state $_config ||= FWfwd::Config->load }$/;"	s
-delete	FWfwd.pm	/^sub delete { }$/;"	s
+config	FWfwd/App.pm	/^sub config { state $_config ||= FWfwd::Config->load }$/;"	s
+content	FWfwd/Response.pm	/^sub content {$/;"	s
+content_length	FWfwd/Request.pm	/^sub content_length { shift->env->{CONTENT_LENGTH} || 0 }$/;"	s
+content_type	FWfwd/Response.pm	/^sub content_type {$/;"	s
+cookie	FWfwd/Response.pm	/^sub cookie {$/;"	s
+cookies	FWfwd/Response.pm	/^sub cookies {$/;"	s
+delete	FWfwd.pm	/^sub delete  { _app->route->add( ['delete'],  @_ ) }$/;"	s
 dispatch	FWfwd/Routes.pm	/^sub dispatch {$/;"	s
-get	FWfwd.pm	/^sub get {$/;"	s
+env	FWfwd/Request.pm	/^sub env { shift->{env} }$/;"	s
+find	FWfwd/Routes.pm	/^sub find {$/;"	s
+get	FWfwd.pm	/^sub get     { _app->route->add( ['get'],     @_ ) }$/;"	s
 get	FWfwd/Config.pm	/^sub get {$/;"	s
-get_route_by_path	FWfwd/Routes.pm	/^sub get_route_by_path {$/;"	s
-handle_request	FWfwd/Handler.pm	/^sub handle_request {$/;"	s
-head	FWfwd.pm	/^sub head { }$/;"	s
+head	FWfwd.pm	/^sub head    { _app->route->add( ['head'],    @_ ) }$/;"	s
+header	FWfwd/Response.pm	/^sub header { shift->headers(@_) }$/;"	s
+headers	FWfwd/Response.pm	/^sub headers {$/;"	s
 import	FWfwd.pm	/^sub import {$/;"	s
 init	FWfwd/Base.pm	/^sub init { 1 }$/;"	s
+init	FWfwd/Controller.pm	/^sub init {$/;"	s
+init	FWfwd/Request.pm	/^sub init {$/;"	s
 init	FWfwd/Routes.pm	/^sub init {$/;"	s
 init	FWfwd/Routes/Route.pm	/^sub init {$/;"	s
-init_request_headers	FWfwd/Handler.pm	/^sub init_request_headers {$/;"	s
+input_handle	FWfwd/Request.pm	/^sub input_handle   { $_[0]->env->{'psgi.input'} || $_[0]->env->{'PSGI.INPUT'} }$/;"	s
+internal_error	FWfwd/Renderer.pm	/^sub internal_error {$/;"	s
 load	FWfwd/Config.pm	/^sub load {$/;"	s
+method	FWfwd/Request.pm	/^sub method { shift->env->{REQUEST_METHOD} }$/;"	s
 method	FWfwd/Routes/Route.pm	/^sub method { uc( shift->{method} ) }$/;"	s
+name	FWfwd/Base.pm	/^sub name { 'YAEFW v' . $FWfwd::VERSION }$/;"	s
 new	FWfwd/Base.pm	/^sub new {$/;"	s
-param	FWfwd/Controller.pm	/^sub param {$/;"	s
+not_found	FWfwd/Renderer.pm	/^sub not_found {$/;"	s
+options	FWfwd.pm	/^sub options { _app->route->add( ['options'], @_ ) }$/;"	s
+param	FWfwd/Controller.pm	/^sub param { shift->req->param( shift ) || '=NA=' }$/;"	s
+param	FWfwd/Request.pm	/^sub param {$/;"	s
 params	FWfwd/Controller.pm	/^sub params {$/;"	s
+path	FWfwd/Request.pm	/^sub path   { shift->env->{PATH_INFO} || '\/' }$/;"	s
 path	FWfwd/Routes/Route.pm	/^sub path   { shift->{path} }$/;"	s
-post	FWfwd.pm	/^sub post { }$/;"	s
+post	FWfwd.pm	/^sub post    { _app->route->add( ['post'],    @_ ) }$/;"	s
 process_request	FWfwd/Handler.pm	/^sub process_request {$/;"	s
 psgi_app	FWfwd/Handler.pm	/^sub psgi_app {$/;"	s
-put	FWfwd.pm	/^sub put { }$/;"	s
+put	FWfwd.pm	/^sub put     { _app->route->add( ['put'],     @_ ) }$/;"	s
+render	FWfwd/App.pm	/^sub render   { goto &renderer }$/;"	s
 render	FWfwd/Controller.pm	/^sub render {$/;"	s
 render	FWfwd/Renderer.pm	/^sub render {$/;"	s
 render	FWfwd/Renderer/JSON.pm	/^sub render {$/;"	s
-render	FWfwd/Renderer/Plain.pm	/^sub render {$/;"	s
+render	FWfwd/Renderer/Text.pm	/^sub render {$/;"	s
 render_response	FWfwd/Handler.pm	/^sub render_response {$/;"	s
-renderer	FWfwd/App.pm	/^sub renderer   { state $_renderer   ||= FWfwd::Renderer->new }$/;"	s
-route	FWfwd/App.pm	/^sub route   { goto &routes }$/;"	s
-routes	FWfwd/App.pm	/^sub routes  { state $_route ||= FWfwd::Routes->new }$/;"	s
+render_static	FWfwd/Renderer.pm	/^sub render_static {$/;"	s
+renderer	FWfwd/App.pm	/^sub renderer { state $_renderer ||= FWfwd::Renderer->new }$/;"	s
+req	FWfwd/Controller.pm	/^sub req { shift->{req} }$/;"	s
+route	FWfwd/App.pm	/^sub route  { goto &routes }$/;"	s
+routes	FWfwd/App.pm	/^sub routes { state $_route ||= FWfwd::Routes->new }$/;"	s
 routes	FWfwd/Routes.pm	/^sub routes {$/;"	s
 run	FWfwd/App.pm	/^sub run {$/;"	s
 start	FWfwd.pm	/^sub start { goto &_start }$/;"	s
 start	FWfwd/Handler.pm	/^sub start {$/;"	s
 stash	FWfwd/Controller.pm	/^sub stash {$/;"	s
+status	FWfwd/Response.pm	/^sub status {$/;"	s
+uri	FWfwd/Request.pm	/^sub uri    { shift->env->{REQUEST_URI} }$/;"	s

@@ -7,8 +7,6 @@ use FindBin;
 
 use lib "$FindBin::Bin/../../lib";
 
-use Data::Dumper;
-
 use FWfwd;
 
 
@@ -43,6 +41,8 @@ get '/to-post' => sub {
     my $form = <<EOF;
 to post<br>
 <form action="/post" method="post">
+<input type="text" name="name" value="=default=">
+<input type="text" name="second" value="=second=">
 <input type="submit">
 </form>
 EOF
@@ -60,4 +60,6 @@ post '/post' => sub {
 };
 
 
-FWfwd->start;
+app->start;
+
+__DATA__
