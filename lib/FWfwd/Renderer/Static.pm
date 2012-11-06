@@ -37,6 +37,7 @@ sub render {
     return $mime, $data;
 }
 
+
 sub _mime_type {
     my ( $self, $path ) = @_;
 
