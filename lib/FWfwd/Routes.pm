@@ -62,16 +62,32 @@ sub dispatch {
 
     my $req = FWfwd::Request->new($env);
 
+    my $res;
 
-    my ($route) = $self->find( $req->method, $req->path );
+    # static
+    if ( $req->is_static ) {
+        $res = $self->app->render->static( $req->path );
+    }
+    # action
+    elsif ( my ($route) = $self->find( $req->method, $req->path ) ) {
+
 say 'route:';
 p $route;
+        # TODO Cache -> cached, cache
+        if ( $route->cached ) {
+            $res = $route->cache;
+        }
+        else {
+            $res = $route->code->( FWfwd::Controller->new($req) );
+       
+            if ( $res && $res->status ) {
+                $route->cache($res);
+            }
+        }
 
-    if ( not defined($route) ) {
-
-        # TODO try to render static file
-        #      otherwise - 404
-        #$self->app->renderer->render_static( $path );
+    }
+    # 404
+    else {
 
         my $errmsg =
               'No route to `' . $req->path . '` via '
@@ -84,27 +100,12 @@ p $route;
             $errmsg .= $_->{method} . "\t=> " . $_->{path} . "\n";
         }
 
-#        croak $errmsg;
+        $res = $self->app->render->not_found($errmsg);
 
-        my $r = $self->app->render->not_found($errmsg);
-
-say '404';
-p $r;
-        return $r;
     }
 
 
-    # cache here
-    # return cached
-
-    # return new && TODO cache
-    my $r = $route->code->( FWfwd::Controller->new($req) );
-    # end
-
-#say 'result from controller';
-#p $r;
-
-    return $r;
+    return $res;
 }
 
 

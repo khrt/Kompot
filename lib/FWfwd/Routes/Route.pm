@@ -30,6 +30,20 @@ sub path   { shift->{path} }
 sub code   { shift->{code} }
 
 
+
+sub cached {
+    my $self = shift;
+    # TODO
+    return;
+}
+
+sub cache {
+    my ( $self, $res ) = @_;
+    # TODO
+    return;
+}
+
+
 1;
 
 __END__

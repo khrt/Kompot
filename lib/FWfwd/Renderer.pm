@@ -13,8 +13,9 @@ use Carp;
 use base 'FWfwd::Base';
 
 use FWfwd::Renderer::EPL;
-use FWfwd::Renderer::Text;
 use FWfwd::Renderer::JSON;
+use FWfwd::Renderer::Static;
+use FWfwd::Renderer::Text;
 
 use FWfwd::Response;
 
@@ -97,10 +98,27 @@ sub render {
 }
 
 
-sub render_static {
+sub static {
     my ( $self, $path ) = @_;
 
-    return;
+    my ( $type, $data ) = FWfwd::Renderer::Static->new->render($path);
+
+    return if !$type;
+
+    my $r = FWfwd::Response->new;
+
+    $r->status(200);
+
+    $r->header(
+        'content-type'   => $type,
+        'content-length' => length($data),
+
+        'x-powered-by'   => $self->app->name,
+    );
+
+    $r->content($data);
+
+    return $r;
 }
 
 

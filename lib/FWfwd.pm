@@ -24,7 +24,6 @@ use FWfwd::App;
 use base 'Exporter';
 
 our @EXPORT = qw(
-
     delete get head options post put any
 
     app start
@@ -43,7 +42,8 @@ sub import {
 sub _app   { FWfwd::App->app }
 sub _start { _app->run }
 
-###
+
+### Export subs
 
 sub app   { __PACKAGE__ }
 sub start { goto &_start }

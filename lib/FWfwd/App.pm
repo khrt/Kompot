@@ -30,7 +30,6 @@ use FWfwd::Controller;
 #use FWfwd::MIME;
 
 
-
 #sub controller { state $_controller ||= FWfwd::Controller->new }
 
 sub renderer { state $_renderer ||= FWfwd::Renderer->new }
@@ -39,10 +38,14 @@ sub render   { goto &renderer }
 sub routes { state $_route ||= FWfwd::Routes->new }
 sub route  { goto &routes }
 
-sub config { state $_config ||= FWfwd::Config->load }
+sub config { state $_config ||= FWfwd::Config->new }
+
+sub dir { shift->config }
 
 #
 
+
+#
 
 sub run {
     my $self = shift;

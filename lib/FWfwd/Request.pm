@@ -17,7 +17,7 @@ sub init {
     my $self = shift;
 
     $self->{env} = shift;
-
+#p $self->{env};
     
     $self->_build_params;
 }
@@ -35,10 +35,14 @@ sub path   { shift->env->{PATH_INFO} || '/' }
 sub uri    { shift->env->{REQUEST_URI} }
 
 
+sub is_static { shift->path =~ /\.([\w\d]+)$/ }
+
+
 sub param {
     my ( $self, $param ) = @_;
     return $self->{params}->{$param};
 }
+
 
 
 sub content_length { shift->env->{CONTENT_LENGTH} || 0 }
@@ -50,25 +54,25 @@ sub input_handle   { $_[0]->env->{'psgi.input'} || $_[0]->env->{'PSGI.INPUT'} }
 sub _build_params {
     my $self = shift;
 
-    $self->_parse_get_params();
+    $self->_parse_request_params();
 
     if ( $self->is_forward ) {
         $self->{_body_params} = {};
     }
     else {
-        $self->_parse_post_params();
+        $self->_parse_body_params();
     }
 
     # and merge everything
     $self->{params} = {
         %{ $self->{_query_params} },
-#        %{ $self->{_route_params} },
+#        %{ $self->{_route_params} }, # TODO
         %{ $self->{_body_params} },
     };
 }
 
 
-sub _parse_get_params {
+sub _parse_request_params {
     my $self = shift;
 
     return $self->{_query_params} if defined $self->{_query_params};
@@ -79,7 +83,7 @@ sub _parse_get_params {
     return $self->{_query_params};
 }
 
-sub _parse_post_params {
+sub _parse_body_params {
     my $self = shift;
 
     return $self->{_body_params} if defined $self->{_body_params};
@@ -103,6 +107,8 @@ sub _parse_post_params {
 
 sub _parse_params {
     my ( $self, $params ) = @_;
+
+    return {} if not $params;
 
     my $pp;
 
