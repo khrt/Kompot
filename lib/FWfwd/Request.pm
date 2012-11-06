@@ -54,13 +54,13 @@ sub input_handle   { $_[0]->env->{'psgi.input'} || $_[0]->env->{'PSGI.INPUT'} }
 sub _build_params {
     my $self = shift;
 
-    $self->_parse_request_params();
+    $self->_parse_query_params;
 
     if ( $self->is_forward ) {
         $self->{_body_params} = {};
     }
     else {
-        $self->_parse_body_params();
+        $self->_parse_body_params;
     }
 
     # and merge everything
@@ -72,7 +72,7 @@ sub _build_params {
 }
 
 
-sub _parse_request_params {
+sub _parse_query_params {
     my $self = shift;
 
     return $self->{_query_params} if defined $self->{_query_params};

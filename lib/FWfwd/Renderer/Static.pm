@@ -6,17 +6,25 @@ use strict;
 use warnings;
 
 use utf8;
+use autodie qw(open close);
+
+use MIME::Types;
 
 use base 'FWfwd::Base';
+
+
+sub init {
+    my $self = shift;
+
+    $self->{_mime_types} = MIME::Types->new( only_complete => 1 );
+}
 
 
 sub render {
     my ( $self, $path ) = @_;
 
-
     $path = $self->app->dir->static . $path;
     return if not ( -e $path );
-
 
     my $data;
 
@@ -24,7 +32,21 @@ sub render {
     $data .= $_ while (<$fh>);
     close $fh;
 
-    return 'text/html', $data;
+    my $mime = $self->_mime_type( $path );
+
+    return $mime, $data;
+}
+
+sub _mime_type {
+    my ( $self, $path ) = @_;
+
+    $path =~ /\.([\w\d]+)$/;
+
+    my $ext = $1;
+
+    my $type = $self->{_mime_types}->mimeTypeOf( lc($ext) );
+
+    return $type || 'application/data';
 }
 
 
