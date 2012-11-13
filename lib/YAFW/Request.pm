@@ -16,8 +16,10 @@ use base 'YAFW::Base';
 sub init {
     my $self = shift;
 
-    $self->{env} = shift;
-#p $self->{env};
+    my $p = @_ % 2 ? @_ : { @_ };
+
+
+    $self->{env} = $p->{env};
 
 
     $self->{_read_position} = 0;
@@ -57,6 +59,17 @@ sub content_length { shift->env->{CONTENT_LENGTH} || 0 }
 sub input_handle   { $_[0]->env->{'psgi.input'} || $_[0]->env->{'PSGI.INPUT'} }
 
 
+# TODO set route params, url_decode route values
+sub _set_route_params {
+    my ( $self, $p ) = @_;
+
+    $self->{_route_params} = $p;
+
+    map { $p->{$_} = $self->_url_decode( $p->{$_} ) } keys %$p;
+
+    $self->_build_params;
+}
+
 
 # Taken from Dancer::Request
 sub _build_params {
@@ -79,13 +92,6 @@ sub _build_params {
     };
 }
 
-
-# TODO
-sub _parse_route_params {
-    my $self = shift;
-
-    return $self->{_route_params} if defined $self->{_route_params};
-}
 
 sub _parse_query_params {
     my $self = shift;

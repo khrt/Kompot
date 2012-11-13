@@ -59,9 +59,9 @@ sub find {
 
 
 sub dispatch {
-    my ( $self, $env ) = @_;
+    my $self = shift;
 
-    my $req = YAFW::Request->new($env);
+    my $req = $self->app->request;
 
     my $res;
 
@@ -80,12 +80,6 @@ say "\n\n";
             $res = $route->cache;
         }
         else {
-
-            # TODO do the access to `request` through all app
-            if ( $route->has_params ) {
-                $req->{_route_params} = $route->parse_path_params;
-                $req->_build_params;
-            }
 
             if ( $res = $route->code->( YAFW::Controller->new($req) ) ) {
                 $route->cache($res);

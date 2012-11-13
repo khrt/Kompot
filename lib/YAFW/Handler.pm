@@ -30,10 +30,9 @@ sub psgi_app {
     sub {
         my $env = shift;
 
-#        my $request = Dancer::Request->new(env => $env);
-#        $self->handle_request($request);
+        $self->app->request( env => $env );
 
-        $self->process_request($env);
+        $self->process_request;
     };
 }
 

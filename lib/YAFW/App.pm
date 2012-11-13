@@ -24,6 +24,8 @@ use YAFW::Routes;
 sub name { 'yawfw-v' . $YAFW::VERSION }
 
 
+sub request { shift; state $_request ||= YAFW::Request->new(@_) }
+
 sub renderer { state $_renderer ||= YAFW::Renderer->new }
 sub render   { goto &renderer }
 
