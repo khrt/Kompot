@@ -1,4 +1,4 @@
-package YAFW::Base;
+package YAWFW::Base;
 
 use v5.12;
 
@@ -22,7 +22,7 @@ sub init { 1 }
 
 
 
-sub app { state $_app ||= YAFW::App->new }
+sub app { state $_app ||= YAWFW::App->new }
 
 
 

@@ -1,4 +1,4 @@
-package YAFW::Renderer::Text;
+package YAWFW::Renderer::Text;
 
 use v5.12;
 
@@ -7,9 +7,9 @@ use warnings;
 
 use utf8;
 
-use base 'YAFW::Base';
+use base 'YAWFW::Base';
 
-use YAFW::Response;
+use YAWFW::Response;
 
 sub render {
     my $self = shift;
@@ -26,7 +26,7 @@ sub render {
 
 
     return
-        YAFW::Response->new(
+        YAWFW::Response->new(
             content_type => $pp->{'content-type'} || 'text/plain',
             content      => $text,
         );

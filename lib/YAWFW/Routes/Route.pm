@@ -1,4 +1,4 @@
-package YAFW::Routes::Route;
+package YAWFW::Routes::Route;
 
 use v5.12;
 
@@ -13,9 +13,9 @@ use Carp;
 use File::stat;
 use Digest::SHA1 qw(sha1_hex);
 
-use base 'YAFW::Base';
+use base 'YAWFW::Base';
 
-use YAFW::Response;
+use YAWFW::Response;
 
 
 sub init {
@@ -178,7 +178,7 @@ sub cache {
     chomp $ctype;
 
     $res =
-        YAFW::Response->new(
+        YAWFW::Response->new(
             status       => $st,
             content_type => $ctype,
             content      => \@data,

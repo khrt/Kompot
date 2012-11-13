@@ -1,4 +1,4 @@
-package YAFW::Response;
+package YAWFW::Response;
 
 use v5.12;
 
@@ -10,7 +10,7 @@ use utf8;
 use DDP { output => 'stdout' };
 use Carp;
 
-use base 'YAFW::Base';
+use base 'YAWFW::Base';
 
 sub init {
     my $self = shift;

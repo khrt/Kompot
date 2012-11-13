@@ -1,4 +1,4 @@
-package YAFW::Renderer::JSON;
+package YAWFW::Renderer::JSON;
 
 use v5.12;
 
@@ -9,9 +9,9 @@ use utf8;
 
 use JSON::XS;
 
-use base 'YAFW::Base';
+use base 'YAWFW::Base';
 
-use YAFW::Response;
+use YAWFW::Response;
 
 sub render {
     my $self = shift;
@@ -19,7 +19,7 @@ sub render {
     my $p = { @_ };
 
     return
-        YAFW::Response->new(
+        YAWFW::Response->new(
             content_type => 'application/json',
             content      => encode_json( $p->{json} ),
         );

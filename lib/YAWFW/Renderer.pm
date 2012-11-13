@@ -1,4 +1,4 @@
-package YAFW::Renderer;
+package YAWFW::Renderer;
 
 use v5.12;
 
@@ -10,14 +10,14 @@ use utf8;
 use DDP { output => 'stdout' };
 use Carp;
 
-use base 'YAFW::Base';
+use base 'YAWFW::Base';
 
-use YAFW::Renderer::EPL;
-use YAFW::Renderer::JSON;
-use YAFW::Renderer::Static;
-use YAFW::Renderer::Text;
+use YAWFW::Renderer::EPL;
+use YAWFW::Renderer::JSON;
+use YAWFW::Renderer::Static;
+use YAWFW::Renderer::Text;
 
-use YAFW::Response;
+use YAWFW::Response;
 
 
 
@@ -61,7 +61,7 @@ sub dynamic {
 
     # JSON
     if ( defined($json) ) {
-        $r = YAFW::Renderer::JSON->new->render( json => $json );
+        $r = YAWFW::Renderer::JSON->new->render( json => $json );
     }
     elsif ( defined($template) ) {
 
@@ -73,11 +73,11 @@ sub dynamic {
     }
     # Text
     elsif ( defined($text) ) {
-        $r = YAFW::Renderer::Text->new->render( text => $text, params => $p );
+        $r = YAWFW::Renderer::Text->new->render( text => $text, params => $p );
     }
     else {
 
-        YAFW::Response->new(
+        YAWFW::Response->new(
             status       => 500,
             content_type => 'text/plain',
             content      => 'internal error / no renderer',
@@ -100,7 +100,7 @@ sub dynamic {
 sub static {
     my ( $self, $path ) = @_;
 
-    my $r = YAFW::Renderer::Static->new->render($path);
+    my $r = YAWFW::Renderer::Static->new->render($path);
 
     if ( not $r ) {
         croak 'file not found';
@@ -124,7 +124,7 @@ sub not_found {
 
     my $type = 'text/plain';
 
-    my $r = YAFW::Response->new;
+    my $r = YAWFW::Response->new;
 
     $r->status(404);
 
@@ -144,7 +144,7 @@ sub internal_error {
     my $self  = shift;
     my $error = shift;
 
-    my $r = YAFW::Response->new;
+    my $r = YAWFW::Response->new;
 
     $r->status(500);
 

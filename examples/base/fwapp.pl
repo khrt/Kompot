@@ -7,7 +7,7 @@ use FindBin;
 
 use lib "$FindBin::Bin/../../lib";
 
-use YAFW;
+use YAWFW;
 
 
 get '/' => sub {
@@ -15,7 +15,7 @@ get '/' => sub {
 
     $self->stash(
         to   => 'World',
-        from => 'YAFW',
+        from => 'YAWFW',
     );
     
     $self->render( text => 'Hello, <% to %>! From `<% from %>`.' );

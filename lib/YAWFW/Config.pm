@@ -1,4 +1,4 @@
-package YAFW::Config;
+package YAWFW::Config;
 
 use v5.12;
 
@@ -11,7 +11,7 @@ use FindBin qw($Bin);
 #use YAML::XS qw(LoadFile);
 
 
-use base 'YAFW::Base';
+use base 'YAWFW::Base';
 
 
 # constuctor like new

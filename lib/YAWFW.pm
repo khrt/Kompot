@@ -1,4 +1,4 @@
-package YAFW;
+package YAWFW;
 
 use v5.12;
 
@@ -18,7 +18,7 @@ use DDP output => 'stdout';
 
 use File::Spec;
 
-use YAFW::App;
+use YAWFW::App;
 
 
 use base 'Exporter';
@@ -39,7 +39,7 @@ sub import {
     $class->export_to_level( 1, $class, qw() );
 }
 
-sub _app   { YAFW::App->app }
+sub _app   { YAWFW::App->app }
 sub _start { _app->run }
 
 

@@ -1,4 +1,4 @@
-package YAFW::Controller;
+package YAWFW::Controller;
 
 use v5.12;
 
@@ -9,9 +9,9 @@ use utf8;
 
 use DDP { output => 'stdout' };
 
-use base 'YAFW::Base';
+use base 'YAWFW::Base';
 
-use YAFW::Renderer;
+use YAWFW::Renderer;
 
 sub init {
     my $self = shift;

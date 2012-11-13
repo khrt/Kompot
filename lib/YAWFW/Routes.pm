@@ -1,4 +1,4 @@
-package YAFW::Routes;
+package YAWFW::Routes;
 
 use v5.12;
 
@@ -10,11 +10,11 @@ use utf8;
 use Carp;
 use DDP { output => 'stdout' };
 
-use base 'YAFW::Base';
+use base 'YAWFW::Base';
 
-use YAFW::Request;
-use YAFW::Routes::Route;
-use YAFW::Controller;
+use YAWFW::Request;
+use YAWFW::Routes::Route;
+use YAWFW::Controller;
 
 
 sub init {
@@ -34,7 +34,7 @@ sub add {
 
     foreach my $method ( @$methods ) {
         my $route = 
-            YAFW::Routes::Route->new( {
+            YAWFW::Routes::Route->new( {
                 method => $method,
                 path   => $path,
                 code   => $code,
@@ -81,7 +81,7 @@ say "\n\n";
         }
         else {
 
-            if ( $res = $route->code->( YAFW::Controller->new($req) ) ) {
+            if ( $res = $route->code->( YAWFW::Controller->new($req) ) ) {
                 $route->cache($res);
             }
         }

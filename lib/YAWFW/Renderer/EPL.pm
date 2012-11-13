@@ -1,4 +1,4 @@
-package YAFW::Renderer::EPL;
+package YAWFW::Renderer::EPL;
 
 use v5.12;
 
@@ -9,7 +9,7 @@ use utf8;
 
 use Mojo::Template;
 
-use base 'YAFW::Base';
+use base 'YAWFW::Base';
 
 
 #sub render {
