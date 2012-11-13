@@ -1,4 +1,4 @@
-package FWfwd::Routes;
+package YAFW::Routes;
 
 use v5.12;
 
@@ -10,10 +10,11 @@ use utf8;
 use Carp;
 use DDP { output => 'stdout' };
 
-use base 'FWfwd::Base';
+use base 'YAFW::Base';
 
-use FWfwd::Request;
-use FWfwd::Routes::Route;
+use YAFW::Request;
+use YAFW::Routes::Route;
+use YAFW::Controller;
 
 
 sub init {
@@ -33,7 +34,7 @@ sub add {
 
     foreach my $method ( @$methods ) {
         my $route = 
-            FWfwd::Routes::Route->new( {
+            YAFW::Routes::Route->new( {
                 method => $method,
                 path   => $path,
                 code   => $code,
@@ -53,14 +54,15 @@ sub routes {
 sub find {
     my ( $self, $method, $path ) = @_;
 
-    grep { $_->method eq uc($method) && $_->path eq $path } @{ shift->{routes} }
+    grep { ( uc($method) eq $_->method ) && $_->match($path) } @{ $self->{routes} };
+
 }
 
 
 sub dispatch {
     my ( $self, $env ) = @_;
 
-    my $req = FWfwd::Request->new($env);
+    my $req = YAFW::Request->new($env);
 
     my $res;
 
@@ -73,14 +75,22 @@ sub dispatch {
 
 say 'route:';
 p $route;
-        # TODO Cache -> cached, cache
+say "\n\n";
+
+        # TODO -> cached, cache
         if ( $route->cached ) {
+say 'route cached';
             $res = $route->cache;
         }
         else {
-            $res = $route->code->( FWfwd::Controller->new($req) );
-       
-            if ( $res && $res->status ) {
+
+            # TODO do the access to `request` through all app
+            if ( $route->has_params ) {
+                $req->{_route_params} = $route->parse_path_params;
+                $req->_build_params;
+            }
+
+            if ( $res = $route->code->( YAFW::Controller->new($req) ) ) {
                 $route->cache($res);
             }
         }

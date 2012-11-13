@@ -1,4 +1,4 @@
-package FWfwd::Renderer;
+package YAFW::Renderer;
 
 use v5.12;
 
@@ -10,14 +10,14 @@ use utf8;
 use DDP { output => 'stdout' };
 use Carp;
 
-use base 'FWfwd::Base';
+use base 'YAFW::Base';
 
-use FWfwd::Renderer::EPL;
-use FWfwd::Renderer::JSON;
-use FWfwd::Renderer::Static;
-use FWfwd::Renderer::Text;
+use YAFW::Renderer::EPL;
+use YAFW::Renderer::JSON;
+use YAFW::Renderer::Static;
+use YAFW::Renderer::Text;
 
-use FWfwd::Response;
+use YAFW::Response;
 
 
 
@@ -37,7 +37,7 @@ use FWfwd::Response;
 
 
 
-sub render {
+sub dynamic {
     my ( $self, $c, $p ) = @_;
 
     $p ||= {};
@@ -50,19 +50,18 @@ sub render {
 
     map { $p->{$_} = $stash->{$_} } keys(%$stash);
 
-
     
     my $json     = delete( $p->{json} );
     my $template = delete( $p->{template} );
     my $text     = delete( $p->{text} );
 
 
+    my $r;
 
-    my ( $type, $data );
 
     # JSON
     if ( defined($json) ) {
-        ( $type, $data ) = FWfwd::Renderer::JSON->new->render( json => $json );
+        $r = YAFW::Renderer::JSON->new->render( json => $json );
     }
     elsif ( defined($template) ) {
 
@@ -74,25 +73,25 @@ sub render {
     }
     # Text
     elsif ( defined($text) ) {
-        ( $type, $data ) = FWfwd::Renderer::Text->new->render( text => $text, params => $p );
+        $r = YAFW::Renderer::Text->new->render( text => $text, params => $p );
     }
     else {
-        croak 'internal error';
-        return;
+
+        YAFW::Response->new(
+            content_type => 'text/plain',
+            content      => 'internal error / no renderer',
+            status       => 500,
+        );
+
     }
 
-    my $r = FWfwd::Response->new;
 
-    $r->status(200);
+    $r->status(200) if !$r->status;
 
     $r->header(
-        'content-type'   => $type,
-        'content-length' => length($data),
-
+        'content-length' => length( $r->content ),
         'x-powered-by'   => $self->app->name,
     );
-
-    $r->content($data);
 
     return $r;
 }
@@ -101,22 +100,19 @@ sub render {
 sub static {
     my ( $self, $path ) = @_;
 
-    my ( $type, $data ) = FWfwd::Renderer::Static->new->render($path);
+    my $r = YAFW::Renderer::Static->new->render($path);
 
-    return if !$type;
-
-    my $r = FWfwd::Response->new;
+    if ( not $r ) {
+        croak 'file not found';
+        return;
+    }
 
     $r->status(200);
 
     $r->header(
-        'content-type'   => $type,
-        'content-length' => length($data),
-
+        'content-length' => length( $r->content ),
         'x-powered-by'   => $self->app->name,
     );
-
-    $r->content($data);
 
     return $r;
 }
@@ -128,7 +124,7 @@ sub not_found {
 
     my $type = 'text/plain';
 
-    my $r = FWfwd::Response->new;
+    my $r = YAFW::Response->new;
 
     $r->status(404);
 
@@ -148,7 +144,7 @@ sub internal_error {
     my $self  = shift;
     my $error = shift;
 
-    my $r = FWfwd::Response->new;
+    my $r = YAFW::Response->new;
 
     $r->status(500);
 

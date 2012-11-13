@@ -1,4 +1,4 @@
-package FWfwd::Renderer::Static;
+package YAFW::Renderer::Static;
 
 use v5.12;
 
@@ -10,8 +10,9 @@ use autodie qw(open close);
 
 use MIME::Types;
 
-use base 'FWfwd::Base';
+use base 'YAFW::Base';
 
+use YAFW::Response;
 
 sub init {
     my $self = shift;
@@ -34,7 +35,11 @@ sub render {
 
     my $mime = $self->_mime_type( $path );
 
-    return $mime, $data;
+    return 
+        YAFW::Response->new(
+            content_type => $mime,
+            content      => $data,
+        );
 }
 
 

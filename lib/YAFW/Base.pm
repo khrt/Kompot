@@ -1,4 +1,4 @@
-package FWfwd::Base;
+package YAFW::Base;
 
 use v5.12;
 
@@ -22,9 +22,9 @@ sub init { 1 }
 
 
 
-sub app { state $_app ||= FWfwd::App->new }
+sub app { state $_app ||= YAFW::App->new }
 
-sub name { 'EFW v' . $FWfwd::VERSION }
+sub name { 'EFW v' . $YAFW::VERSION }
 
 
 1;

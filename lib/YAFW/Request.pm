@@ -1,4 +1,4 @@
-package FWfwd::Request;
+package YAFW::Request;
 
 use v5.12;
 
@@ -10,7 +10,7 @@ use utf8;
 use DDP { output => 'stdout' };
 use Carp;
 
-use base 'FWfwd::Base';
+use base 'YAFW::Base';
 
 
 sub init {
@@ -18,6 +18,10 @@ sub init {
 
     $self->{env} = shift;
 #p $self->{env};
+
+    $self->{_body_params} = undef;
+    $self->{_query_params} = undef;
+    $self->{_route_params} = {};
     
     $self->_build_params;
 }
@@ -66,11 +70,18 @@ sub _build_params {
     # and merge everything
     $self->{params} = {
         %{ $self->{_query_params} },
-#        %{ $self->{_route_params} }, # TODO
+        %{ $self->{_route_params} },
         %{ $self->{_body_params} },
     };
 }
 
+
+# TODO
+sub _parse_route_params {
+    my $self = shift;
+
+    return $self->{_route_params} if defined $self->{_route_params};
+}
 
 sub _parse_query_params {
     my $self = shift;

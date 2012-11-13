@@ -1,4 +1,4 @@
-package FWfwd::Config;
+package YAFW::Config;
 
 use v5.12;
 
@@ -8,10 +8,10 @@ use warnings;
 use utf8;
 
 use FindBin qw($Bin);
-use YAML::XS qw(LoadFile);
+#use YAML::XS qw(LoadFile);
 
 
-use base 'FWfwd::Base';
+use base 'YAFW::Base';
 
 
 # constuctor like new
@@ -33,6 +33,9 @@ sub get {
 }
 
 
+sub salt {
+    '2ewdsock23ws9iockd'
+}
 
 
 sub root { shift->{app_root} }

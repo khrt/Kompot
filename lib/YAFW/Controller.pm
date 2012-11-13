@@ -1,4 +1,4 @@
-package FWfwd::Controller;
+package YAFW::Controller;
 
 use v5.12;
 
@@ -9,9 +9,9 @@ use utf8;
 
 use DDP { output => 'stdout' };
 
-use base 'FWfwd::Base';
+use base 'YAFW::Base';
 
-use FWfwd::Renderer;
+use YAFW::Renderer;
 
 sub init {
     my $self = shift;
@@ -65,7 +65,7 @@ sub render {
 
     my $app = $self->app;
 
-    $app->renderer->render( $self, $p);
+    $app->render->dynamic( $self, $p);
 }
 
 

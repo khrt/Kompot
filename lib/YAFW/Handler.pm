@@ -1,4 +1,4 @@
-package FWfwd::Handler;
+package YAFW::Handler;
 
 use v5.12;
 
@@ -10,7 +10,7 @@ use utf8;
 use DDP { output => 'stdout' };
 use Carp;
 
-use base 'FWfwd::Base';
+use base 'YAFW::Base';
 
 
 
@@ -73,8 +73,7 @@ sub process_request {
 
 
 sub render_response {
-    my $self = shift;
-    my $r = shift;
+    my ( $self, $r ) = @_;
 
     # drop content AND content_length if reponse is 1xx or (2|3)04
     if ( $r->status =~ /^(?:2|3)04$/ ) {

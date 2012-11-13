@@ -1,4 +1,4 @@
-package FWfwd::Response;
+package YAFW::Response;
 
 use v5.12;
 
@@ -10,8 +10,16 @@ use utf8;
 use DDP { output => 'stdout' };
 use Carp;
 
-use base 'FWfwd::Base';
+use base 'YAFW::Base';
 
+sub init {
+    my $self = shift;
+
+    my $p = @_ % 2 ? $_[0] : { @_ };
+
+    $self->content_type( $p->{content_type} ) if ( $p->{content_type} );
+    $self->content( $p->{content} )           if ( $p->{content} );
+}
 
 
 sub status {
@@ -57,7 +65,7 @@ sub content {
     my $self = shift;
 
     if ( scalar @_ ) {
-        push( @{ $self->{content} }, shift );
+        push( @{ $self->{content} }, @_ );
     }
 
     return $self->{content};

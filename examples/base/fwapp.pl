@@ -7,7 +7,7 @@ use FindBin;
 
 use lib "$FindBin::Bin/../../lib";
 
-use FWfwd;
+use YAFW;
 
 
 get '/' => sub {
@@ -15,7 +15,7 @@ get '/' => sub {
 
     $self->stash(
         to   => 'World',
-        from => 'FWfwd',
+        from => 'YAFW',
     );
     
     $self->render( text => 'Hello, <% to %>! From `<% from %>`.' );
@@ -55,10 +55,29 @@ post '/post' => sub {
     my $self = shift;
 
     my $name = $self->param('name');
+    my $se = $self->param('second');
 
-    $self->render( text => "Hello, $name!" );
+    $self->render( text => "Hello, $name! ($se)" );
 };
 
+
+get '/route/:pp' => sub {
+    my $self = shift;
+
+    my $pp = $self->param('pp');
+
+    $self->render( text => "1 param. The param is $pp!" );
+};
+
+
+get '/route/:p/:pp' => sub {
+    my $self = shift;
+
+    my $p = $self->param('p');
+    my $pp = $self->param('pp');
+
+    $self->render( text => "2 param. The params is $p, $pp!" );
+};
 
 app->start;
 

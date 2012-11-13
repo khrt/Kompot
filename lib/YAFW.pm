@@ -1,4 +1,4 @@
-package FWfwd;
+package YAFW;
 
 use v5.12;
 
@@ -18,7 +18,7 @@ use DDP output => 'stdout';
 
 use File::Spec;
 
-use FWfwd::App;
+use YAFW::App;
 
 
 use base 'Exporter';
@@ -39,7 +39,7 @@ sub import {
     $class->export_to_level( 1, $class, qw() );
 }
 
-sub _app   { FWfwd::App->app }
+sub _app   { YAFW::App->app }
 sub _start { _app->run }
 
 
@@ -55,7 +55,7 @@ sub options { _app->route->add( ['options'], @_ ) }
 sub post    { _app->route->add( ['post'],    @_ ) }
 sub put     { _app->route->add( ['put'],     @_ ) }
 
-sub any     { _app->route->add(@_) }
+sub any     { _app->route->add( [qw( delete get head post put )], @_) }
 
 
 1;

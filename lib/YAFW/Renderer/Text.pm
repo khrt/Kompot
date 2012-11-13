@@ -1,4 +1,4 @@
-package FWfwd::Renderer::Text;
+package YAFW::Renderer::Text;
 
 use v5.12;
 
@@ -7,8 +7,9 @@ use warnings;
 
 use utf8;
 
-use base 'FWfwd::Base';
+use base 'YAFW::Base';
 
+use YAFW::Response;
 
 sub render {
     my $self = shift;
@@ -18,14 +19,17 @@ sub render {
     my $pp    = delete( $p->{params} );
     my $text  = delete( $p->{text} );
 
-    my $ctype = delete( $pp->{'content-type'} ) || 'text/plain';
-
 
     foreach my $ph ( keys(%$pp) ) {
         $text =~ s/<%\s?$ph\s?%>/$pp->{$ph}/g;
     }
 
-    return $ctype, $text;
+
+    return
+        YAFW::Response->new(
+            content_type => $pp->{'content-type'} || 'text/plain',
+            content      => $text,
+        );
 }
 
 
