@@ -37,6 +37,9 @@ sub salt {
     '2ewdsock23ws9iockd'
 }
 
+sub cache_ttl {
+    10
+}
 
 sub root { shift->{app_root} }
 sub static { shift->{app_root} . '/static' }

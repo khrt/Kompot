@@ -19,6 +19,10 @@ sub init {
     $self->{env} = shift;
 #p $self->{env};
 
+
+    $self->{_read_position} = 0;
+    $self->{_chunk_size} = 4096;
+
     $self->{_body_params} = undef;
     $self->{_query_params} = undef;
     $self->{_route_params} = {};
@@ -162,10 +166,8 @@ sub _parse_params {
 sub _read {
     my $self = shift;
 
-    $self->{_read_position} ||= 0;
-
     my $remaining = $self->content_length - $self->{_read_position};
-    my $maxlength = 4096; #$self->{_chunk_size};
+    my $maxlength = $self->{_chunk_size};
 
     return if $remaining <= 0;
 

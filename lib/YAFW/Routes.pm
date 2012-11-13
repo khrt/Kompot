@@ -55,7 +55,6 @@ sub find {
     my ( $self, $method, $path ) = @_;
 
     grep { ( uc($method) eq $_->method ) && $_->match($path) } @{ $self->{routes} };
-
 }
 
 
@@ -77,9 +76,7 @@ say 'route:';
 p $route;
 say "\n\n";
 
-        # TODO -> cached, cache
         if ( $route->cached ) {
-say 'route cached';
             $res = $route->cache;
         }
         else {

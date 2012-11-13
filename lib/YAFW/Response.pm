@@ -17,8 +17,9 @@ sub init {
 
     my $p = @_ % 2 ? $_[0] : { @_ };
 
-    $self->content_type( $p->{content_type} ) if ( $p->{content_type} );
-    $self->content( $p->{content} )           if ( $p->{content} );
+    $self->status( $p->{status} )             if $p->{status};
+    $self->content_type( $p->{content_type} ) if $p->{content_type};
+    $self->content( $p->{content} )      if $p->{content};
 }
 
 
@@ -65,7 +66,8 @@ sub content {
     my $self = shift;
 
     if ( scalar @_ ) {
-        push( @{ $self->{content} }, @_ );
+        my @c = ref( $_[0] ) ? @{ $_[0] } : $_[0];
+        push( @{ $self->{content} }, @c );
     }
 
     return $self->{content};

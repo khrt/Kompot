@@ -7,7 +7,7 @@ use warnings;
 
 use utf8;
 
-our $VERSION = '0.0.1';
+our $VERSION = '0.1';
 
 # FINDBIN
 use FindBin;

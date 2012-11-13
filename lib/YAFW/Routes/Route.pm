@@ -30,13 +30,22 @@ sub init {
 
     $self->_path_keys;
 
+
+    $self->{cache_ttl} = $self->app->config->cache_ttl || 0;
+
     return 1;
 }
+
+
+sub cache_ttl  { shift->{cache_ttl} }
+
+sub has_params { shift->{has_params} }
 
 sub code    { shift->{code} }
 
 sub method  { uc( shift->{method} ) }
 sub path    { shift->{path} }
+
 
 sub path_re { 
     my $self = shift;
@@ -59,15 +68,14 @@ sub match {
 
     my $re = $self->path_re;
 
-    if ( $path =~ $re ) {
-        $self->parse_path_params;
-        return 1;
-    }
+    return if $path !~ $re;
 
-    return 0;
+    $self->parse_path_params;
+
+    return 1;
 }
 
-# TODO
+
 sub parse_path_params {
     my $self = shift;
 
@@ -84,7 +92,6 @@ sub parse_path_params {
     return $self->{_params};
 }
 
-sub has_params { shift->{has_params} }
 
 sub _path_keys {
     my $self = shift;
@@ -109,13 +116,19 @@ sub _path_keys {
 sub cache_file {
     my $self = shift;
 
-    $self->{cache_file} ||=
-        '/tmp/' . sha1_hex($self->app->config->salt) . sha1_hex($self->path);
+    return $self->{cache_file} if $self->{cache_file};
+
+
+    my $hash = $self->path;
+
+    if ( $self->has_params ) {
+        $hash .= values( %{ $self->parse_path_params } );
+    }
+
+    $self->{cache_file} = '/tmp/' . $self->app->name . '-' . sha1_hex($hash);
 
     return $self->{cache_file};
 }
-
-sub cache_ttl { shift->{cache_ttl} || 42 }
 
 sub cached {
     my $self = shift;
@@ -134,15 +147,15 @@ sub cached {
 sub cache {
     my ( $self, $res ) = @_;
 
-return 0;
-
     # cache
     if ( $res && $res->content && not $self->cached ) {
 
         open my $fh, '>:encoding(UTF-8)', $self->cache_file;
         print $fh $res->status . "\n"; 
         print $fh $res->content_type . "\n"; 
-        print $fh $res->content;
+
+        for ( @{ $res->content } ) { print $fh $_ };
+
         close $fh;
 
         return 1;
@@ -151,24 +164,25 @@ return 0;
 
     return if not $self->cached;
 
+
     open my $fh, '<', $self->cache_file;
     my @data = <$fh>;
     close $fh;
 
-p @data;
-die;
+    my $st = shift @data;
+    chomp $st;
 
-    my $status = 000; # read
-    my $content_type = '/'; # ...
-    my $content = ''; # ...
+    my $ctype = shift @data;
+    chomp $ctype;
 
-
-    return
+    $res =
         YAFW::Response->new(
-            status       => $status,
-            content_type => $content_type,
-            content      => $content,
+            status       => $st,
+            content_type => $ctype,
+            content      => \@data,
         );
+
+    return $res;
 }
 
 

@@ -24,7 +24,6 @@ sub init { 1 }
 
 sub app { state $_app ||= YAFW::App->new }
 
-sub name { 'EFW v' . $YAFW::VERSION }
 
 
 1;

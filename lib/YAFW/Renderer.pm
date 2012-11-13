@@ -78,9 +78,9 @@ sub dynamic {
     else {
 
         YAFW::Response->new(
+            status       => 500,
             content_type => 'text/plain',
             content      => 'internal error / no renderer',
-            status       => 500,
         );
 
     }
