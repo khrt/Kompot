@@ -29,7 +29,6 @@ sub psgi_app {
 
     sub {
         my $env = shift;
-
         $self->app->request( env => $env );
 
         $self->process_request;
@@ -38,34 +37,26 @@ sub psgi_app {
 
 
 sub process_request {
-    my ( $self, $env ) = @_;
-
-#p $env;
+    my $self = shift;
 
 #    Dancer::SharedData->reset_all( reset_vars => !$request->is_forward);
 
     # read cookies from client
 #    Dancer::Cookies->init;
 
-
     my $app = $self->app;
+
 
     my $response;
 
     eval {
-        $response = $app->routes->dispatch($env);
+        $response = $app->routes->dispatch;
     };
 
 
     if ( $@ ) {
-        my $r = $self->app->render->internal_error($@);
-        return $self->render_response($r);
+        $response = $app->render->internal_error($@);
     }
-
-    if ( !$response ) {
-        croak 'no reponse';
-    }
-
 
     return $self->render_response( $response );
 }

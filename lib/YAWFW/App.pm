@@ -24,7 +24,17 @@ use YAWFW::Routes;
 sub name { 'yawfw-v' . $YAWFW::VERSION }
 
 
-sub request { shift; state $_request ||= YAWFW::Request->new(@_) }
+sub request { 
+    my $self = shift;
+
+    state $_request;
+    
+    if ( scalar @_ ) {
+        $_request = YAWFW::Request->new(@_);
+    }
+
+    return $_request;
+}
 
 sub renderer { state $_renderer ||= YAWFW::Renderer->new }
 sub render   { goto &renderer }
@@ -33,7 +43,6 @@ sub routes { state $_route ||= YAWFW::Routes->new }
 sub route  { goto &routes }
 
 sub config { state $_config ||= YAWFW::Config->new }
-
 sub dir { shift->config }
 
 #

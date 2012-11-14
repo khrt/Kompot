@@ -59,7 +59,6 @@ sub content_length { shift->env->{CONTENT_LENGTH} || 0 }
 sub input_handle   { $_[0]->env->{'psgi.input'} || $_[0]->env->{'PSGI.INPUT'} }
 
 
-# TODO set route params, url_decode route values
 sub _set_route_params {
     my ( $self, $p ) = @_;
 

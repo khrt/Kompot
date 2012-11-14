@@ -72,9 +72,9 @@ sub dispatch {
     # action
     elsif ( my ($route) = $self->find( $req->method, $req->path ) ) {
 
-say 'route:';
-p $route;
-say "\n\n";
+#say 'route:';
+#p $route;
+#say "\n\n";
 
         if ( $route->cached ) {
             $res = $route->cache;
@@ -87,8 +87,10 @@ say "\n\n";
         }
 
     }
+
+
     # 404
-    else {
+    if ( not $res ) {
 
         my $errmsg =
               'No route to `' . $req->path . '` via '

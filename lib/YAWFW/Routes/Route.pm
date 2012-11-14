@@ -79,8 +79,6 @@ sub match {
 sub parse_path_params {
     my $self = shift;
 
-    return $self->{_params} if $self->{_params};
-
     my %p;
 
     foreach ( @{ $self->{_path_keys} } ) {
@@ -115,30 +113,29 @@ sub _path_keys {
 }
 
 
-sub cache_file {
+sub _cache_filename {
     my $self = shift;
-
-    return $self->{cache_file} if $self->{cache_file};
-
 
     my $hash = $self->path;
 
     if ( $self->has_params ) {
-        $hash .= values( %{ $self->parse_path_params } );
+        $hash .= join( '&', values( %{ $self->{_params} } ) );
     }
 
-    $self->{cache_file} = '/tmp/' . $self->app->name . '-' . sha1_hex($hash);
+    my $name = '/tmp/' . $self->app->name . '-' . sha1_hex($hash);
 
-    return $self->{cache_file};
+    return $name;
 }
 
 sub cached {
     my $self = shift;
 
-    # file not exists
-    return if ( not -e $self->cache_file );
+    my $file = $self->_cache_filename;
 
-    my $st = stat( $self->cache_file ) or die $1;
+    # file not exists
+    return if ( not -e $file );
+
+    my $st = stat($file) or die $1;
 
     # cache expired
     return if ( $self->cache_ttl < ( time - $st->mtime ) );
@@ -149,10 +146,12 @@ sub cached {
 sub cache {
     my ( $self, $res ) = @_;
 
+    my $file = $self->_cache_filename;
+
     # cache
     if ( $res && $res->content && not $self->cached ) {
 
-        open my $fh, '>:encoding(UTF-8)', $self->cache_file;
+        open my $fh, '>:encoding(UTF-8)', $file;
         print $fh $res->status . "\n"; 
         print $fh $res->content_type . "\n"; 
 
@@ -167,7 +166,7 @@ sub cache {
     return if not $self->cached;
 
 
-    open my $fh, '<', $self->cache_file;
+    open my $fh, '<', $file;
     my @data = <$fh>;
     close $fh;
 
@@ -183,6 +182,8 @@ sub cache {
             content_type => $ctype,
             content      => \@data,
         );
+
+say 'return from cache: ' . $self->path;
 
     return $res;
 }
