@@ -55,7 +55,11 @@ sub path_re {
 
         my $p = $self->path;
 
-        $p =~ s#:([\w\d]+)#(?<$1>[^/]+)#g;
+        # replace path to regex; to routes with defined regex
+        $p =~ s#:([\w\d]+)(?:{([^}]+)})?#(?<$1>$2)#g;
+
+        # add default regex to route params without regex
+        $p =~ s#\(\?<([\w\d]+)>\)#(?<$1>[^/]+)#g;
 
         $self->{path_re} = qr/^$p$/;
     }
@@ -100,7 +104,7 @@ sub _path_keys {
 
     my @p;
 
-    while ( $path =~ m#:([^/]+)#g ) {
+    while ( $path =~ m#:([^/{]+)#g ) {
 
         $self->{has_params} ||= 1;
 

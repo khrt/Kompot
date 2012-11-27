@@ -21,6 +21,7 @@ YAWFW::Routes	YAWFW/Routes.pm	/^package YAWFW::Routes;$/;"	p
 YAWFW::Routes::Route	YAWFW/Routes/Route.pm	/^package YAWFW::Routes::Route;$/;"	p
 _app	YAWFW.pm	/^sub _app   { YAWFW::App->app }$/;"	s
 _build_params	YAWFW/Request.pm	/^sub _build_params {$/;"	s
+_cache_filename	YAWFW/Routes/Route.pm	/^sub _cache_filename {$/;"	s
 _is_text	YAWFW/Renderer.pm	/^sub _is_text {$/;"	s
 _mime_type	YAWFW/Renderer/Static.pm	/^sub _mime_type {$/;"	s
 _parse_body_params	YAWFW/Request.pm	/^sub _parse_body_params {$/;"	s
@@ -36,7 +37,6 @@ any	YAWFW.pm	/^sub any     { _app->route->add( [qw( delete get head post put )],
 app	YAWFW.pm	/^sub app   { __PACKAGE__ }$/;"	s
 app	YAWFW/Base.pm	/^sub app { state $_app ||= YAWFW::App->new }$/;"	s
 cache	YAWFW/Routes/Route.pm	/^sub cache {$/;"	s
-cache_file	YAWFW/Routes/Route.pm	/^sub cache_file {$/;"	s
 cache_ttl	YAWFW/Config.pm	/^sub cache_ttl {$/;"	s
 cache_ttl	YAWFW/Routes/Route.pm	/^sub cache_ttl  { shift->{cache_ttl} }$/;"	s
 cached	YAWFW/Routes/Route.pm	/^sub cached {$/;"	s
@@ -98,7 +98,7 @@ render	YAWFW/Renderer/Text.pm	/^sub render {$/;"	s
 render_response	YAWFW/Handler.pm	/^sub render_response {$/;"	s
 renderer	YAWFW/App.pm	/^sub renderer { state $_renderer ||= YAWFW::Renderer->new }$/;"	s
 req	YAWFW/Controller.pm	/^sub req { shift->{req} }$/;"	s
-request	YAWFW/App.pm	/^sub request { shift; state $_request ||= YAWFW::Request->new(@_) }$/;"	s
+request	YAWFW/App.pm	/^sub request { $/;"	s
 root	YAWFW/Config.pm	/^sub root { shift->{app_root} }$/;"	s
 route	YAWFW/App.pm	/^sub route  { goto &routes }$/;"	s
 routes	YAWFW/App.pm	/^sub routes { state $_route ||= YAWFW::Routes->new }$/;"	s

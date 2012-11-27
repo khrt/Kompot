@@ -61,6 +61,23 @@ post '/post' => sub {
 };
 
 
+get '/regex/:route{\d\w+}' => sub {
+    my $self = shift;
+
+    my $route = $self->param('route');
+
+    $self->render( text => "route: $route" );
+};
+
+get '/regex/:a{\d\w+}/:b{\w+}' => sub {
+    my $self = shift;
+
+    my $a = $self->param('a');
+    my $b = $self->param('b');
+
+    $self->render( text => "a: $a; b: $b" );
+};
+
 get '/route/:pp' => sub {
     my $self = shift;
 
