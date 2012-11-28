@@ -1,4 +1,4 @@
-package YAWFW::Renderer::JSON;
+package Kompot::Renderer::JSON;
 
 use v5.12;
 
@@ -9,9 +9,9 @@ use utf8;
 
 use JSON::XS;
 
-use base 'YAWFW::Base';
+use base 'Kompot::Base';
 
-use YAWFW::Response;
+use Kompot::Response;
 
 sub render {
     my $self = shift;
@@ -19,7 +19,7 @@ sub render {
     my $p = { @_ };
 
     return
-        YAWFW::Response->new(
+        Kompot::Response->new(
             content_type => 'application/json',
             content      => encode_json( $p->{json} ),
         );

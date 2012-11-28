@@ -1,4 +1,4 @@
-package YAWFW::Renderer::EPL;
+package Kompot::Renderer::EPL;
 
 use v5.12;
 
@@ -9,7 +9,7 @@ use utf8;
 
 use Mojo::Template;
 
-use base 'YAWFW::Base';
+use base 'Kompot::Base';
 
 
 #sub render {

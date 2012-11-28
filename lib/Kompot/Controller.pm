@@ -1,4 +1,4 @@
-package YAWFW::Controller;
+package Kompot::Controller;
 
 use v5.12;
 
@@ -9,9 +9,9 @@ use utf8;
 
 use DDP { output => 'stdout' };
 
-use base 'YAWFW::Base';
+use base 'Kompot::Base';
 
-use YAWFW::Renderer;
+use Kompot::Renderer;
 
 sub init {
     my $self = shift;

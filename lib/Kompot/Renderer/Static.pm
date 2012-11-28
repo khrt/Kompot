@@ -1,4 +1,4 @@
-package YAWFW::Renderer::Static;
+package Kompot::Renderer::Static;
 
 use v5.12;
 
@@ -10,9 +10,9 @@ use autodie qw(open close);
 
 use MIME::Types;
 
-use base 'YAWFW::Base';
+use base 'Kompot::Base';
 
-use YAWFW::Response;
+use Kompot::Response;
 
 sub init {
     my $self = shift;
@@ -36,7 +36,7 @@ sub render {
     my $mime = $self->_mime_type( $path );
 
     return 
-        YAWFW::Response->new(
+        Kompot::Response->new(
             content_type => $mime,
             content      => $data,
         );

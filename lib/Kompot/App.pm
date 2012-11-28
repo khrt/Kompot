@@ -1,4 +1,4 @@
-package YAWFW::App;
+package Kompot::App;
 
 use v5.12;
 
@@ -9,19 +9,19 @@ use utf8;
 
 use DDP { output => 'stdout' };
 
-use base 'YAWFW::Base';
+use base 'Kompot::Base';
 
-use YAWFW::Config;
-use YAWFW::Handler;
-use YAWFW::Renderer;
-use YAWFW::Routes;
-
-
-#use YAWFW::Cookie;
-#use YAWFW::Session;
+use Kompot::Config;
+use Kompot::Handler;
+use Kompot::Renderer;
+use Kompot::Routes;
 
 
-sub name { 'yawfw-v' . $YAWFW::VERSION }
+#use Kompot::Cookie;
+#use Kompot::Session;
+
+
+sub name { 'yawfw-v' . $Kompot::VERSION }
 
 
 sub request { 
@@ -30,19 +30,19 @@ sub request {
     state $_request;
     
     if ( scalar @_ ) {
-        $_request = YAWFW::Request->new(@_);
+        $_request = Kompot::Request->new(@_);
     }
 
     return $_request;
 }
 
-sub renderer { state $_renderer ||= YAWFW::Renderer->new }
+sub renderer { state $_renderer ||= Kompot::Renderer->new }
 sub render   { goto &renderer }
 
-sub routes { state $_route ||= YAWFW::Routes->new }
+sub routes { state $_route ||= Kompot::Routes->new }
 sub route  { goto &routes }
 
-sub config { state $_config ||= YAWFW::Config->new }
+sub config { state $_config ||= Kompot::Config->new }
 sub dir { shift->config }
 
 #
@@ -56,7 +56,7 @@ sub run {
     my $cfg = $self->config;
 #p($cfg);
 
-    my $handler = YAWFW::Handler->new;
+    my $handler = Kompot::Handler->new;
 #p($handler);
 
     my $response = $handler->start;

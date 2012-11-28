@@ -1,4 +1,4 @@
-package YAWFW::Routes;
+package Kompot::Routes;
 
 use v5.12;
 
@@ -10,11 +10,11 @@ use utf8;
 use Carp;
 use DDP { output => 'stdout' };
 
-use base 'YAWFW::Base';
+use base 'Kompot::Base';
 
-use YAWFW::Request;
-use YAWFW::Routes::Route;
-use YAWFW::Controller;
+use Kompot::Request;
+use Kompot::Routes::Route;
+use Kompot::Controller;
 
 
 sub init {
@@ -34,7 +34,7 @@ sub add {
 
     foreach my $method ( @$methods ) {
         my $route = 
-            YAWFW::Routes::Route->new( {
+            Kompot::Routes::Route->new( {
                 method => $method,
                 path   => $path,
                 code   => $code,
@@ -81,7 +81,7 @@ sub dispatch {
         }
         else {
 
-            if ( $res = $route->code->( YAWFW::Controller->new($req) ) ) {
+            if ( $res = $route->code->( Kompot::Controller->new($req) ) ) {
                 $route->cache($res);
             }
         }

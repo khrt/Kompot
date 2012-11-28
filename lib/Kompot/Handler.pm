@@ -1,4 +1,4 @@
-package YAWFW::Handler;
+package Kompot::Handler;
 
 use v5.12;
 
@@ -10,7 +10,7 @@ use utf8;
 use DDP { output => 'stdout' };
 use Carp;
 
-use base 'YAWFW::Base';
+use base 'Kompot::Base';
 
 
 

@@ -1,4 +1,4 @@
-package YAWFW::Renderer::Text;
+package Kompot::Renderer::Text;
 
 use v5.12;
 
@@ -7,9 +7,9 @@ use warnings;
 
 use utf8;
 
-use base 'YAWFW::Base';
+use base 'Kompot::Base';
 
-use YAWFW::Response;
+use Kompot::Response;
 
 sub render {
     my $self = shift;
@@ -26,7 +26,7 @@ sub render {
 
 
     return
-        YAWFW::Response->new(
+        Kompot::Response->new(
             content_type => $pp->{'content-type'} || 'text/plain',
             content      => $text,
         );

@@ -1,4 +1,4 @@
-package YAWFW::Base;
+package Kompot::Base;
 
 use v5.12;
 
@@ -22,7 +22,7 @@ sub init { 1 }
 
 
 
-sub app { state $_app ||= YAWFW::App->new }
+sub app { state $_app ||= Kompot::App->new }
 
 
 

@@ -1,4 +1,4 @@
-package YAWFW::Routes::Route;
+package Kompot::Routes::Route;
 
 use v5.12;
 
@@ -13,9 +13,9 @@ use Carp;
 use File::stat;
 use Digest::SHA1 qw(sha1_hex);
 
-use base 'YAWFW::Base';
+use base 'Kompot::Base';
 
-use YAWFW::Response;
+use Kompot::Response;
 
 
 sub init {
@@ -181,7 +181,7 @@ sub cache {
     chomp $ctype;
 
     $res =
-        YAWFW::Response->new(
+        Kompot::Response->new(
             status       => $st,
             content_type => $ctype,
             content      => \@data,

@@ -1,4 +1,4 @@
-package YAWFW::Config;
+package Kompot::Config;
 
 use v5.12;
 
@@ -11,7 +11,7 @@ use FindBin qw($Bin);
 #use YAML::XS qw(LoadFile);
 
 
-use base 'YAWFW::Base';
+use base 'Kompot::Base';
 
 
 # constuctor like new
