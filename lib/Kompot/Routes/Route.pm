@@ -55,11 +55,13 @@ sub path_re {
 
         my $p = $self->path;
 
-        # replace path to regex; to routes with defined regex
-        $p =~ s#:([\w\d]+)(?:{([^}]+)})?#(?<$1>$2)#g;
+        # 1step: parse route and set placeholder name
+        $p =~ s#:([\w\d]+)(?:{([^}]+)})?#(?<$1>)#g;
 
-        # add default regex to route params without regex
-        $p =~ s#\(\?<([\w\d]+)>\)#(?<$1>[^/]+)#g;
+        my $re = $2 || '[^/]+';
+
+        # 2step: add regex name to placeholder
+        $p =~ s#\(\?<([\w\d]+)>\)#(?<$1>$re)#g;
 
         $self->{path_re} = qr/^$p$/;
     }
