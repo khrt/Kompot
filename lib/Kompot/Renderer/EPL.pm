@@ -71,9 +71,6 @@ use base 'Kompot::Base';
 #}
 
 
-
-
-
 1;
 
 __END__

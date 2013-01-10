@@ -13,8 +13,6 @@ use Carp;
 use base 'Kompot::Base';
 
 
-
-
 sub start {
     my $self = shift;
 
@@ -23,18 +21,16 @@ sub start {
     return $app;
 }
 
-
 sub psgi_app {
     my $self = shift;
 
     sub {
         my $env = shift;
-        $self->app->request( env => $env );
+        $self->app->request(env => $env);
 
         $self->process_request;
     };
 }
-
 
 sub process_request {
     my $self = shift;
@@ -46,29 +42,24 @@ sub process_request {
 
     my $app = $self->app;
 
-
     my $response;
 
-    eval {
-        $response = $app->routes->dispatch;
-    };
+    eval { $response = $app->routes->dispatch; };
 
-
-    if ( $@ ) {
+    if ($@) {
         $response = $app->render->internal_error($@);
     }
 
-    return $self->render_response( $response );
+    return $self->render_response($response);
 }
 
-
 sub render_response {
-    my ( $self, $r ) = @_;
+    my ($self, $r) = @_;
 
     # drop content AND content_length if reponse is 1xx or (2|3)04
-    if ( $r->status =~ /^(?:2|3)04$/ ) {
+    if ($r->status =~ /^(?:2|3)04$/) {
         $r->{content} = [''];
-        $r->header( 'content-length' => 0 );
+        $r->header('content-length' => 0);
     }
 
     # drop content if request is HEAD
@@ -76,7 +67,7 @@ sub render_response {
 #        if ( defined Dancer::SharedData->request
 #        && Dancer::SharedData->request->is_head() );
 
-    return [ $r->status, $r->headers, $r->content ];
+    return [$r->status, $r->headers, $r->content];
 }
 
 

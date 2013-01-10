@@ -14,21 +14,21 @@ use Kompot::Response;
 sub render {
     my $self = shift;
 
-    my $p = { @_ };
+    my $p = {@_};
 
-    my $pp    = delete( $p->{params} );
-    my $text  = delete( $p->{text} );
+    my $pp   = delete($p->{params});
+    my $text = delete($p->{text});
 
-
-    foreach my $ph ( keys(%$pp) ) {
+    # substitute values
+    foreach my $ph (keys(%$pp)) {
         $text =~ s/<%\s?$ph\s?%>/$pp->{$ph}/g;
     }
-
 
     return
         Kompot::Response->new(
             content_type => $pp->{'content-type'} || 'text/plain',
             content      => $text,
+            status       => 200,
         );
 }
 

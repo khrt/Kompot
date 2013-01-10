@@ -23,40 +23,32 @@ sub init {
     $self->{routes} ||= [];
 }
 
-###
-
 sub add {
     my $self = shift;
 
-    my ( $methods, $path, $code ) = @_;
+    my ($methods, $path, $code) = @_;
 
-    $methods = [ $methods ] if not ref($methods);
+    $methods = [$methods] if not ref($methods);
 
-    foreach my $method ( @$methods ) {
-        my $route = 
-            Kompot::Routes::Route->new( {
-                method => $method,
-                path   => $path,
-                code   => $code,
-            } );
+    foreach my $method (@$methods) {
+        my $route =
+            Kompot::Routes::Route->new(
+                { method => $method, path => $path, code => $code, }
+            );
 
-        push( @{ $self->{routes} }, $route );
+        push(@{ $self->{routes} }, $route);
     }
 }
 
-
-
 sub routes {
-    map { { method => $_->method, path => $_->path } } @{ shift->{routes} }
+    map { { method => $_->method, path => $_->path } } @{ shift->{routes} };
 }
-
 
 sub find {
-    my ( $self, $method, $path ) = @_;
+    my ($self, $method, $path) = @_;
 
-    grep { ( uc($method) eq $_->method ) && $_->match($path) } @{ $self->{routes} };
+    grep { (uc($method) eq $_->method) && $_->match($path) } @{ $self->{routes} };
 }
-
 
 sub dispatch {
     my $self = shift;
@@ -66,47 +58,39 @@ sub dispatch {
     my $res;
 
     # static
-    if ( $req->is_static ) {
-        $res = $self->app->render->static( $req->path );
+    if ($req->is_static) {
+        $res = $self->app->render->static($req->path);
     }
     # action
-    elsif ( my ($route) = $self->find( $req->method, $req->path ) ) {
-
+    elsif (my ($route) = $self->find($req->method, $req->path)) {
 #say 'route:';
 #p $route;
 #say "\n\n";
-
-        if ( $route->cached ) {
+        if ($route->cached) {
             $res = $route->cache;
         }
         else {
-
-            if ( $res = $route->code->( Kompot::Controller->new($req) ) ) {
-                $route->cache($res);
-            }
+            $res = $route->code->(Kompot::Controller->new($req));
+            $route->cache($res) if $res;
         }
-
     }
-
 
     # 404
-    if ( not $res ) {
-
-        my $errmsg =
-              'No route to `' . $req->path . '` via '
-            . uc( $req->method )
-            . ".\nAvailable routes:\n";
-
+    if (not $res) {
         my @routes = $self->routes;
+        my $routes;
 
-        foreach ( @routes ) {
-            $errmsg .= $_->{method} . "\t=> " . $_->{path} . "\n";
+        foreach (@routes) {
+            $routes .= $_->{method} . "\t=> " . $_->{path} . "\n";
         }
 
+        my $errmsg = <<MSG_END;
+No route to `${ \$req->path }` via ${ \uc($req->method) }.
+Available routes:\n$routes
+MSG_END
+
         $res = $self->app->render->not_found($errmsg);
-
     }
-
 
     return $res;
 }

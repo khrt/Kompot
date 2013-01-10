@@ -11,19 +11,16 @@ use utf8;
 sub new {
     my $class = shift;
 
-    my $self = bless( {}, ref($class) || $class );
+    my $self = bless({}, ref($class) || $class);
 
     $self->init(@_);
 
     return $self;
 }
 
-sub init { 1 }
-
-
+sub init {1}
 
 sub app { state $_app ||= Kompot::App->new }
-
 
 
 1;

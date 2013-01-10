@@ -16,12 +16,17 @@ use Kompot::Response;
 sub render {
     my $self = shift;
 
-    my $p = { @_ };
+    my $p = {@_};
+
+    my $json = encode_json($p->{json});
+
+    return if not $json;
 
     return
         Kompot::Response->new(
             content_type => 'application/json',
-            content      => encode_json( $p->{json} ),
+            content      => $json,
+            status       => 200,
         );
 }
 

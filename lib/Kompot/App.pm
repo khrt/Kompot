@@ -15,14 +15,10 @@ use Kompot::Config;
 use Kompot::Handler;
 use Kompot::Renderer;
 use Kompot::Routes;
+use Kompot::Session;
 
 
-#use Kompot::Cookie;
-#use Kompot::Session;
-
-
-sub name { 'yawfw-v' . $Kompot::VERSION }
-
+sub name { 'Kompot' . $Kompot::VERSION }
 
 sub request { 
     my $self = shift;
@@ -45,11 +41,11 @@ sub route  { goto &routes }
 sub config { state $_config ||= Kompot::Config->new }
 sub dir { shift->config }
 
+# XXX
+sub session { state $_session ||= Kompot::Session->new }
+
 #
-
-
-#
-
+# Main function
 sub run {
     my $self = shift;
 
@@ -64,10 +60,6 @@ sub run {
 
     return $response;
 }
-
-
-
-
 
 
 1;

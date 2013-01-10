@@ -7,36 +7,31 @@ use warnings;
 
 use utf8;
 
-our $VERSION = '0.1';
+our $VERSION = '0.11';
 
-# FINDBIN
 use FindBin;
 use lib $FindBin::Bin;
-# END
 
 use DDP output => 'stdout';
 
-use File::Spec;
+use base 'Exporter';
 
 use Kompot::App;
 
 
-use base 'Exporter';
-
 our @EXPORT = qw(
     delete get head options post put any
-
     app start
 );
 
 sub import {
-    my ( $class, @args ) = @_;
-    my ( $package, $script ) = caller;
+    my ($class, @args) = @_;
+    my ($package, $script) = caller;
 
     strict->import;
     utf8->import;
     
-    $class->export_to_level( 1, $class, qw() );
+    $class->export_to_level(1, $class, qw());
 }
 
 sub _app   { Kompot::App->app }
@@ -48,14 +43,14 @@ sub _start { _app->run }
 sub app   { __PACKAGE__ }
 sub start { goto &_start }
 
-sub delete  { _app->route->add( ['delete'],  @_ ) }
-sub get     { _app->route->add( ['get'],     @_ ) }
-sub head    { _app->route->add( ['head'],    @_ ) }
-sub options { _app->route->add( ['options'], @_ ) }
-sub post    { _app->route->add( ['post'],    @_ ) }
-sub put     { _app->route->add( ['put'],     @_ ) }
+sub delete  { _app->route->add(['delete'],  @_) }
+sub get     { _app->route->add(['get'],     @_) }
+sub head    { _app->route->add(['head'],    @_) }
+sub options { _app->route->add(['options'], @_) }
+sub post    { _app->route->add(['post'],    @_) }
+sub put     { _app->route->add(['put'],     @_) }
 
-sub any     { _app->route->add( [qw( delete get head post put )], @_) }
+sub any     { _app->route->add([qw(delete get head post put)], @_) }
 
 
 1;

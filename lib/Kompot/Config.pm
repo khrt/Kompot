@@ -10,7 +10,6 @@ use utf8;
 use FindBin qw($Bin);
 #use YAML::XS qw(LoadFile);
 
-
 use base 'Kompot::Base';
 
 

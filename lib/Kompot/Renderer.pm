@@ -20,8 +20,6 @@ use Kompot::Renderer::Text;
 use Kompot::Response;
 
 
-
-
 #sub helpers { shift->{helpers} }
 #
 #sub add_helper {
@@ -35,13 +33,10 @@ use Kompot::Response;
 #}
 
 
-
-
 sub dynamic {
-    my ( $self, $c, $p ) = @_;
+    my ($self, $c, $p) = @_;
 
     $p ||= {};
-
 
     my $stash = $c->stash;
 
@@ -50,120 +45,95 @@ sub dynamic {
 
     map { $p->{$_} = $stash->{$_} } keys(%$stash);
 
-    
-    my $json     = delete( $p->{json} );
-    my $template = delete( $p->{template} );
-    my $text     = delete( $p->{text} );
-
+    my $json     = delete($p->{json});
+    my $template = delete($p->{template});
+    my $text     = delete($p->{text});
 
     my $r;
 
-
     # JSON
-    if ( defined($json) ) {
-        $r = Kompot::Renderer::JSON->new->render( json => $json );
+    if (defined($json)) {
+        $r = Kompot::Renderer::JSON->new->render(json => $json);
     }
-    elsif ( defined($template) ) {
-
-        # Mojo::Template
+    elsif (defined($template)) {
+        # Xslate
         # TT2
-        # ???
+        # Mojo::Template
         croak 'renderer not defined';
-
     }
     # Text
-    elsif ( defined($text) ) {
-        $r = Kompot::Renderer::Text->new->render( text => $text, params => $p );
+    elsif (defined($text)) {
+        $r = Kompot::Renderer::Text->new->render(text => $text, params => $p);
     }
     else {
-
-        Kompot::Response->new(
-            status       => 500,
-            content_type => 'text/plain',
-            content      => 'internal error / no renderer',
-        );
-
+        $r = $self->internal_error('No renderer');
     }
 
+    # in case of errors
+    if (not $r) {
+        return $self->internal_error('render dynamic error');
+    }
 
-    $r->status(200) if !$r->status;
-
-    $r->header(
-        'content-length' => length( $r->content ),
-        'x-powered-by'   => $self->app->name,
-    );
-
-    return $r;
+    return $self->_render($r);
 }
 
-
 sub static {
-    my ( $self, $path ) = @_;
+    my ($self, $path) = @_;
 
     my $r = Kompot::Renderer::Static->new->render($path);
 
-    if ( not $r ) {
+    if (not $r) {
         croak 'file not found';
-        return;
+        return $self->not_found('file not found');
     }
 
-    $r->status(200);
-
-    $r->header(
-        'content-length' => length( $r->content ),
-        'x-powered-by'   => $self->app->name,
-    );
-
-    return $r;
+    return $self->_render($r);
 }
-
 
 sub not_found {
     my $self  = shift;
     my $error = shift;
 
-    my $type = 'text/plain';
+    my $r =
+        Kompot::Response->new(
+            content_type => 'text/plain',
+            content      => $error,
+            status       => 404,
+        );
 
-    my $r = Kompot::Response->new;
-
-    $r->status(404);
-
-    $r->header(
-        'content-type'   => $type,
-        'content-length' => length($error),
-
-        'x-powered-by'   => $self->app->name,
-    );
-
-    $r->content($error);
-
-    return $r;
+    return $self->_render($r);
 }
 
 sub internal_error {
     my $self  = shift;
     my $error = shift;
 
-    my $r = Kompot::Response->new;
+    my $r =
+        Kompot::Response->new(
+            content_type => 'text/plain',
+            content      => $error,
+            status       => 500,
+        );
 
-    $r->status(500);
+    return $self->_render($r);
+}
+
+
+sub _render {
+    my ($self, $r) = @_;
 
     $r->header(
-        'content-type'   => 'text/plain',
-        'content-length' => length($error),
-
+        'content-length' => length($r->content),
         'x-powered-by'   => $self->app->name,
     );
 
-    $r->content($error);
+    $r->status(200) if !$r->status;
 
     return $r;
 }
 
-
-
 sub _is_text {
-    my ( $self, $content_type ) = @_;
+    my ($self, $content_type) = @_;
     return $content_type =~ /(x(?:ht)?ml|text|json|javascript)/;
 }
 
