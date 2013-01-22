@@ -13,7 +13,6 @@ use base 'Kompot::Base';
 
 use Kompot::Renderer;
 
-
 sub init {
     my $self = shift;
 
@@ -45,7 +44,6 @@ sub stash {
 
     # new
     my $v = @_ % 2 ? $_[0] : {@_};
-
     map { $stash->{$_} = $v->{$_} } keys %$v;
 
     return 1;
@@ -53,12 +51,21 @@ sub stash {
 
 sub session {
     my $self = shift;
+p @_;
 
-    my $s = $self->app->session;
-say 'session in Controller';
-p $s;
+    my $session = $self->stash->{'kompot.session'} ||= {};
 
-    return 1;
+    # all
+    return $session if not @_;
+
+    # one
+    return $session->{ $_[0] } if @_ == 1;
+
+    # new
+    my $v = @_ % 2 ? $_[0] : {@_};
+    map { $session->{$_} = $v->{$_} } keys %$v;
+
+    return $self;
 }
 
 sub render {

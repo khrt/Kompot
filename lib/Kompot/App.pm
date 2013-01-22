@@ -17,6 +17,7 @@ use Kompot::Renderer;
 use Kompot::Routes;
 use Kompot::Session;
 
+# XXX NEED SECRET
 
 sub name { 'Kompot' . $Kompot::VERSION }
 
@@ -42,7 +43,8 @@ sub config { state $_config ||= Kompot::Config->new }
 sub dir { shift->config }
 
 # XXX
-sub session { state $_session ||= Kompot::Session->new }
+sub session { state $_session ||= Kompot::Session->new(@_) }
+sub cookie  { state $_cookie ||= Kompot::Cookie->new(@_) }
 
 #
 # Main function

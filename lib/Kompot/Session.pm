@@ -9,55 +9,70 @@ use utf8;
 
 use Carp;
 use DDP { output => 'stdout' };
+use Digest::SHA qw(hmac_sha1_hex);
+use JSON::XS;
+use MIME::Base64;
 
 use base 'Kompot::Base';
 
-my %SESSIONS;
+sub decode {
+    my ($self, $value) = @_;
 
-sub init {
-    my $self = shift;
-    my $sid = shift;
+    if ($value =~ s/--([^\-]+)$//) {
+        my $sign = $1;
 
-    # check cookie with `sid`
-    # - if: exists get it
-    # - else: set cookie & save sid
+        my $secret = 'secret'; # TODO $self->app->secret
+        my $check_value = hmac_sha1_hex($value, $secret);
+say "dec>>>sign>>>$sign";
+say "dec>>>check_value>>>check_value>>$value";
 
-    my $s;
-
-    if ($sid) {
-        return if not $self->get($sid);
+        if (not secure_compare($sign, $check_value)) {
+            # log message
+            carp 'cookie sign is incorrect';
+            return;
+        }
     }
     else {
-        $s = $self->cre;
-
-        # how to get response?
+        # cookie is not signed
+        carp 'cookie is not signed';
+        return;
     }
 
-    # define engine
+    $value =~ s/-/=/g;
+    my $p = decode_json(decode_base64($value)) or return;
 
-    return 1;
+    return $p;
 }
 
-sub generate_sid {
+sub encode {
+    my ($self, $p) = @_;
 
+    return if not keys %$p;
+
+    my $value = encode_base64(encode_json($p), '');
+    $value =~ s/=/-/g;
+
+    # get secret
+    my $secret = 'secret'; # TODO $self->app->secret
+
+    my $hex = hmac_sha1_hex($value, $secret);
+
+say "enc>>>value>>>$value";
+say "enc>>>hex>>>$hex";
+    $value = $value . '--' . $hex;
+
+    return $value;
 }
 
-# retrieve or create
-sub current_session {
-#    $self->set_cookie;
-}
-
-sub get {
-
-}
-
-sub read {
-    #$session->{$key}
-}
-
-sub write {
-    #$session->{key} = $value
-    #$session->flush
+# Mojo::Util
+sub secure_compare {
+    my ($a, $b) = @_;
+    return undef if length $a != length $b;
+say ">>>secure_compare>>";
+    my $r = 0;
+    $r |= ord(substr $a, $_) ^ ord(substr $b, $_) for 0 .. length($a) - 1;
+say ">>>secure_compare>>$r";
+    return $r == 0;
 }
 
 

@@ -9,27 +9,24 @@ use utf8;
 
 use DDP { output => 'stdout' };
 use Carp;
-
 use URI::Escape;
 
 use base 'Kompot::Base';
 
+use Kompot::Cookie;
 
 sub init {
     my $self = shift;
 
     my $p = @_ % 2 ? @_ : {@_};
 
-
     $self->{env} = $p->{env};
-
 
     $self->{_read_position} = 0;
     $self->{_chunk_size}    = 4096;
-
-    $self->{_body_params}  = undef;
-    $self->{_query_params} = undef;
-    $self->{_route_params} = {};
+    $self->{_body_params}   = undef;
+    $self->{_query_params}  = undef;
+    $self->{_route_params}  = {};
 
     $self->_build_params;
 }
@@ -46,36 +43,19 @@ sub uri { shift->env->{REQUEST_URI} }
 sub is_static { shift->path =~ /\.[\w\d]+$/ }
 
 sub content_length { shift->env->{CONTENT_LENGTH} || 0 }
-sub input_handle { $_[0]->env->{'psgi.input'} || $_[0]->env->{'PSGI.INPUT'} }
+sub input_handle   { $_[0]->env->{'psgi.input'} || $_[0]->env->{'PSGI.INPUT'} }
 
 ###
-
-# TODO Cookies & Sessions
-sub cookies {
-    my $self = shift;
-
-    my $cookies_str = $self->env->{COOKIE} || $self->env->{HTTP_COOKIE};
-    return if not $cookies_str;
-say ref $self;
-say $cookies_str;
-
-    my $cookies = {};
-
-    foreach my $cookie (split(/[,;]\s?/, $cookies_str)) {
-        my $c = Kompot::Cookie->new($cookie);
-        $cookies->{ $c->name } = $c;
-    }
-
-    $self->{_cookies} = $cookies;
-
-    return $cookies;
-}
 
 sub param {
     my ($self, $param) = @_;
     return $self->{params}->{$param};
 }
 
+sub cookie {
+    my ($self, $name) = @_;
+    return $self->{_cookies}->{$name}; # XXX
+}
 
 sub _set_route_params {
     my ($self, $p) = @_;
@@ -92,6 +72,7 @@ sub _build_params {
     my $self = shift;
 
     $self->_parse_query_params;
+    $self->_parse_cookies;
 
     if ($self->is_forward) {
         $self->{_body_params} = {};
@@ -106,8 +87,27 @@ sub _build_params {
         %{ $self->{_route_params} },
         %{ $self->{_body_params} },
     };
+
 }
 
+sub _parse_cookies {
+    my $self = shift;
+
+    my $cookies_str = $self->env->{COOKIE} || $self->env->{HTTP_COOKIE};
+    return if not $cookies_str;
+
+    my $cookies = {};
+
+    foreach my $cookie (split(/[,;]\s?/, $cookies_str)) {
+        my $c = Kompot::Cookie->new($cookie);
+        $cookies->{ $c->name } = $c;
+    }
+
+    $self->{_cookies} = $cookies;
+#p $self->{_cookies};
+
+    return $cookies;
+}
 
 sub _parse_query_params {
     my $self = shift;

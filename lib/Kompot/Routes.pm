@@ -66,13 +66,32 @@ sub dispatch {
 #say 'route:';
 #p $route;
 #say "\n\n";
+# XXX before dispatch
         if ($route->cached) {
             $res = $route->cache;
         }
         else {
-            $res = $route->code->(Kompot::Controller->new($req));
-            $route->cache($res) if $res;
+            my $c = Kompot::Controller->new($req);
+
+            my $cookie = $req->cookie('kompot');
+            my $s = Kompot::Session->new;
+            if ($cookie) {
+                my $sp = $s->decode($cookie->value);
+                $c->session(%$sp);
+            }
+
+            $res = $route->code->($c);
+            if ($res) {
+                $cookie = Kompot::Cookie->new(
+                    name    => 'kompot',
+                    value   => $s->encode($c->session),
+                    expires => 36000,
+                );
+                $res->set_cookie($cookie);
+                $route->cache($res);
+            }
         }
+# XXX after dispatch if ($res) {}
     }
 
     # 404

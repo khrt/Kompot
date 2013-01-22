@@ -12,7 +12,6 @@ use Carp;
 
 use base 'Kompot::Base';
 
-
 sub init {
     my $self = shift;
 
@@ -49,7 +48,7 @@ sub headers {
     my $h = $self->{headers} ||= {};
 
     # all / Lower case
-    return [map { $_ => lc($h->{$_}) } keys %$h] if not @_;
+    return [map { $_ => $h->{$_} } keys %$h] if not @_;
 
     # one
     return $h->{ $_[0] } if @_ == 1;
@@ -74,19 +73,10 @@ sub content {
     return $self->{content};
 }
 
-
-# TODO Cookies & Sessions
 sub set_cookie {
     my ($self, $cookie) = @_;
-
-say '= set cookie =';
-p $cookie;
-say $cookie->set;
-    my $cookie_str = $cookie->set;
-
-    $self->headers('Set-Cookie' => $cookie_str);
+    $self->header('Set-Cookie' => $cookie->to_string);
 }
-
 
 1;
 
