@@ -28,8 +28,8 @@ sub init {
 sub req { shift->{req} }
 
 sub params {
-    # return hashref of all params
-    # key => value
+    my $self = shift;
+    return $self->req->params;
 }
 
 sub param {
@@ -44,10 +44,8 @@ sub stash {
 
     # all
     return $stash if not @_;
-
     # one
     return $stash->{ $_[0] } if @_ == 1 and not ref $_[0];
-
     # new
     my $v = @_ % 2 ? $_[0] : {@_};
     map { $stash->{$_} = $v->{$_} } keys %$v;
@@ -62,10 +60,8 @@ sub session {
 
     # all
     return $session if not @_;
-
     # one
     return $session->{ $_[0] } if @_ == 1 and not ref $_[0];
-
     # new
     my $v = @_ % 2 ? $_[0] : {@_};
     map { $session->{$_} = $v->{$_} } keys %$v;

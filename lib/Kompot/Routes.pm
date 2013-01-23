@@ -30,7 +30,6 @@ sub add {
             Kompot::Routes::Route->new(
                 { method => $method, path => $path, code => $code, }
             );
-
         push(@{ $self->{routes} }, $route);
     }
 }
@@ -41,7 +40,7 @@ sub routes {
 
 sub find {
     my ($self, $method, $path) = @_;
-    grep { (uc($method) eq $_->method) && $_->match($path) } @{ $self->{routes} };
+    grep {(uc($method) eq $_->method) && $_->match($path)} @{ $self->{routes} };
 }
 
 sub dispatch {
@@ -56,19 +55,16 @@ sub dispatch {
     }
     # action
     elsif (my ($route) = $self->find($req->method, $req->path)) {
-#say 'route:';
-#p $route;
-#say "\n\n";
         if ($route->cached) {
             $res = $route->cache;
         }
         else {
             my $c = Kompot::Controller->new($req);
-# XXX HOOK before dispatch
+# TODO HOOK before dispatch
             $res = $route->code->($c);
             if ($res) {
                 $route->cache($res);
-# XXX HOOK after dispatch
+# TODO HOOK after dispatch
             }
         }
     }

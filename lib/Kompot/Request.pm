@@ -32,21 +32,21 @@ sub env { shift->{env} }
 
 sub is_forward {0}
 
-sub method { shift->env->{REQUEST_METHOD} }
-sub path { shift->env->{PATH_INFO} || '/' }
-
-sub uri { shift->env->{REQUEST_URI} }
-
-sub is_static { shift->path =~ /\.[\w\d]+$/ }
-
+sub method         { shift->env->{REQUEST_METHOD} }
+sub path           { shift->env->{PATH_INFO} || '/' }
+sub uri            { shift->env->{REQUEST_URI} }
+sub is_static      { shift->path =~ /\.[\w\d]+$/ }
 sub content_length { shift->env->{CONTENT_LENGTH} || 0 }
 sub input_handle   { $_[0]->env->{'psgi.input'} || $_[0]->env->{'PSGI.INPUT'} }
-
-###
 
 sub param {
     my ($self, $param) = @_;
     return $self->{params}->{$param};
+}
+
+sub params {
+    my $self = shift;
+    return $self->{params} || {};
 }
 
 sub cookie {

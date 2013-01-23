@@ -48,12 +48,10 @@ sub path_re {
 
         # 1step: parse route and set placeholder name
         $p =~ s#:([\w\d]+)(?:{([^}]+)})?#(?<$1>)#g;
-
         my $re = $2 || '[^/]+';
 
         # 2step: add regex name to placeholder
         $p =~ s#\(\?<([\w\d]+)>\)#(?<$1>$re)#g;
-
         $self->{path_re} = qr/^$p$/;
     }
 
@@ -98,7 +96,6 @@ sub _path_keys {
     }
 
     $self->{_path_keys} = \@p || [];
-
     return $self->{_path_keys};
 }
 
@@ -112,7 +109,6 @@ sub _cache_filename {
     }
 
     my $name = '/tmp/' . $self->app->name . '-' . sha1_hex($hash);
-
     return $name;
 }
 
@@ -120,15 +116,13 @@ sub cached {
     my $self = shift;
 
     my $file = $self->_cache_filename;
-
     # file not exists
     return if (not -e $file);
 
     my $st = stat($file) or die $1;
-
     # cache expired
     return if ($self->cache_ttl < (time - $st->mtime));
-
+    # ok
     return 1;
 }
 
