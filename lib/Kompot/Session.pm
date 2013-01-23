@@ -16,29 +16,37 @@ use base 'Kompot::Base';
 
 use Kompot::Cookie;
 
-my $cookie_name    = 'kompot';
-my $cookie_path    = '/';
-my $cookie_expires = 30 * 60;
+sub init {
+    my ($self, $cookie_str) = @_;
+    $self->{_cookie} = Kompot::Cookie->new($cookie_str);
+    return 1;
+}
+
+sub cookie { shift->{_cookie} }
 
 # from cookie to session values
-sub load_params {
-    my ($self, $cookies) = @_;
-    my $cookie = $cookies->{$cookie_name} or return {};
+sub params {
+    my $self = shift;
+    my $cookie = $self->cookie or return {};
     my $params = $self->decode($cookie->value);
     return $params || {};
 }
 
 # from session values to cookie
-sub generate_cookie {
+sub store {
     my ($self, $p) = @_;
 
-    my $cookie = Kompot::Cookie->new(
-        name      => $cookie_name,
-        value     => $self->encode($p),
-        path      => $cookie_path,
-        expires   => $cookie_expires,
+    my $conf = $self->app->conf;
+
+    my %params = (
+        name      => $conf->cookie_name,
+        value     => $self->encode($p) || '',
+        path      => '/', # COOKIE PATH
+        expires   => $conf->cookie_expires,
         http_only => 1,
     );
+
+    my $cookie = Kompot::Cookie->new(%params);
 
     return $cookie;
 }

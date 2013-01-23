@@ -17,44 +17,40 @@ sub init {
     my $cookie = @_ % 2 ? $_[0] : {@_};
 
     if (ref($cookie)) {
-        $self->{name}      = $cookie->{name}      || 'kompot';
-        $self->{value}     = $cookie->{value}     || '';
-        $self->{path}      = $cookie->{path}      || '/';
-        $self->{expires}   = $self->_expires($cookie->{expires});
-        $self->{domain}    = $cookie->{domain}    || '';
-        $self->{secure}    = $cookie->{secure}    || '';
+
+        $self->{value} = $cookie->{value} || '';
+        $self->{path}  = $cookie->{path}  || '/';
+        $self->{domain}    = $cookie->{domain} || '';
+        $self->{secure}    = $cookie->{secure} || '';
         $self->{http_only} = $cookie->{http_only} || 1;
+
     }
     else {
-        $self->parse($cookie);
+        ($self->{name}, $self->{value}) = $self->parse($cookie);
     }
 
     return 1;
 }
 
-sub name { shift->{name} }
 sub value { shift->{value} }
 
 sub parse {
-    my ($self, $cookie) = @_;
-
-    my ($name, $value) = split(/\s*=\s*/, $cookie, 2);
-
-    $self->{name}  = $name;
-    $self->{value} = uri_unescape($value);
-
-    return 1;
+    my ($self, $cookie_str) = @_;
+    my ($name, $value) = split(/\s*=\s*/, $cookie_str, 2);
+    return ($name, uri_unescape($value));
 }
 
 sub to_string {
     my $self = shift;
 
+    my $conf = $self->app->conf;
+
     my @cookie;
 
-    push @cookie, $self->{name} . '=' . ($self->{value} || '');
+    push @cookie, $conf->cookie_name . '=' . ($self->{value} || '');
 
     push @cookie, 'path='    . $self->{path}     if $self->{path};
-    push @cookie, 'expires=' . $self->{expires}  if $self->{expires};
+    push @cookie, 'expires=' . $conf->cookie_expires if $conf->cookie_expires;
     push @cookie, 'domain='  . $self->{domain}   if $self->{domain};
 
     push @cookie, 'Secure'   if $self->{secure};

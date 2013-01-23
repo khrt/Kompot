@@ -15,31 +15,19 @@ use Kompot::Config;
 use Kompot::Handler;
 use Kompot::Renderer;
 use Kompot::Routes;
+use Kompot::Session;
 
 sub name { 'Kompot' . $Kompot::VERSION }
 
 sub secret {
-    my ($self, $value) = @_;
-
-    state $secret;
-
-    if ($value) {
-        carp 'set secret value';
-        $secret = $value;
-    }
-
-    return $secret;
+    my ($self, $secret) = @_;
+    return $self->conf->secret($secret);
 }
 
 sub request { 
     my $self = shift;
-
     state $_request;
-    
-    if (scalar @_) {
-        $_request = Kompot::Request->new(@_);
-    }
-
+    $_request = Kompot::Request->new(@_) if scalar @_;
     return $_request;
 }
 
@@ -49,16 +37,13 @@ sub render   { goto &renderer }
 sub routes { state $_route ||= Kompot::Routes->new }
 sub route  { goto &routes }
 
-sub config { state $_config ||= Kompot::Config->new }
-sub dir { goto &config }
+sub conf { state $_conf ||= Kompot::Config->new }
+
 
 #
 # Main function
 sub run {
     my $self = shift;
-
-    my $cfg = $self->config;
-#p($cfg);
 
     if (not $self->secret) {
         carp 'no secret';

@@ -19,7 +19,8 @@ sub init {
     $self->{req} = shift;
 
     # Init session
-    $self->session(Kompot::Session->new->load_params($self->{req}->cookies));
+    my $cookie_str = $self->{req}->cookie($self->app->conf->cookie_name);
+    $self->session(Kompot::Session->new($cookie_str)->params);
 
     return 1;
 }
@@ -87,7 +88,7 @@ sub render {
     my $r = $app->render->dynamic($self, $p);
     if ($r && $r->status == 200) {
         # Set cookie
-        my $cookie = Kompot::Session->new->generate_cookie($self->session);
+        my $cookie = Kompot::Session->new->store($self->session);
         $r->set_cookie($cookie->to_string) if $cookie;
     }
 

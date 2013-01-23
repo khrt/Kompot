@@ -28,7 +28,7 @@ sub init {
     map { $self->{$_} = $p->{$_} } keys(%$p);
 
     $self->_path_keys;
-    $self->{cache_ttl} = $self->app->config->cache_ttl || 0;
+    $self->{cache_ttl} = $self->app->conf->cache_ttl || 0;
 
     return 1;
 }

@@ -22,7 +22,7 @@ sub init {
 sub render {
     my ($self, $path) = @_;
 
-    $path = $self->app->dir->static . $path;
+    $path = $self->app->conf->static . $path;
     return if not(-e $path);
 
     my $data;

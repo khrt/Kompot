@@ -51,10 +51,7 @@ sub param {
 
 sub cookie {
     my ($self, $name) = @_;
-    return $self->{_cookies}->{$name}; # XXX
-}
-sub cookies {
-    my $self = shift;
+    return $self->{_cookies}->{$name} if $name;
     return $self->{_cookies};
 }
 
@@ -100,12 +97,11 @@ sub _parse_cookies {
     my $cookies = {};
 
     foreach my $cookie (split(/[,;]\s?/, $cookies_str)) {
-        my $c = Kompot::Cookie->new($cookie);
-        $cookies->{ $c->name } = $c;
+        my ($name) = split '=', $cookie;
+        $cookies->{$name} = $cookie;
     }
 
     $self->{_cookies} = $cookies;
-#p $self->{_cookies};
 
     return $cookies;
 }
@@ -139,7 +135,6 @@ sub _parse_body_params {
     }
 
     $self->{_body_params} = $self->_parse_params($body) || {};
-
     return $self->{_body_params};
 }
 
@@ -151,20 +146,15 @@ sub _parse_params {
     my $pp;
 
     foreach my $token (split /[&;]/, $params) {
-
         my ($key, $val) = split(/=/, $token, 2);
-
         next if not defined $key;
 
-
-        $val = (defined $val) ? $val : '';
-
         $key = $self->_url_decode($key);
+        $val = (defined $val) ? $val : '';
         $val = $self->_url_decode($val);
 
         # looking for multi-value params
         if (exists $pp->{$key}) {
-
             my $prev_val = $pp->{$key};
 
             if (ref($prev_val) && ref($prev_val) eq 'ARRAY') {
@@ -174,7 +164,6 @@ sub _parse_params {
                 $pp->{$key} = [$prev_val, $val];
             }
         }
-
         # simple value param (first time we see it)
         else {
             $pp->{$key} = $val;
