@@ -17,13 +17,17 @@ sub init {
     my $cookie = @_ % 2 ? $_[0] : {@_};
 
     if (ref($cookie)) {
+        foreach (qw(name value path domain)) {
+            my $v = $cookie->{$_};
+            if (not $v) {
+                carp "Missed required field: `$_`";
+            }
+            $self->{$_} = $v;
+        }
 
-        $self->{value} = $cookie->{value} || '';
-        $self->{path}  = $cookie->{path}  || '/';
-        $self->{domain}    = $cookie->{domain} || '';
-        $self->{secure}    = $cookie->{secure} || '';
-        $self->{http_only} = $cookie->{http_only} || 1;
-
+        $self->{expires}   = $self->_expires($cookie->{expires});
+        $self->{secure}    = $cookie->{secure} ? 1 : 0;
+        $self->{http_only} = $cookie->{http_only} ? 1 : 0;
     }
     else {
         ($self->{name}, $self->{value}) = $self->parse($cookie);
@@ -43,16 +47,12 @@ sub parse {
 sub to_string {
     my $self = shift;
 
-    my $conf = $self->app->conf;
-
     my @cookie;
+    push @cookie, $self->{name} . '=' . ($self->{value} || '');
 
-    push @cookie, $conf->cookie_name . '=' . ($self->{value} || '');
-
-    push @cookie, 'path='    . $self->{path}     if $self->{path};
-    push @cookie, 'expires=' . $conf->cookie_expires if $conf->cookie_expires;
-    push @cookie, 'domain='  . $self->{domain}   if $self->{domain};
-
+    push @cookie, 'Path='    . $self->{path}    if $self->{path};
+    push @cookie, 'Expires=' . $self->{expires} if $self->{expires};
+    push @cookie, 'Domain='  . $self->{domain}  if $self->{domain};
     push @cookie, 'Secure'   if $self->{secure};
     push @cookie, 'HttpOnly' if $self->{http_only};
 
@@ -67,10 +67,8 @@ sub to_string {
 
 sub _expires {
     my ($self, $expires) = @_;
-
     $expires = $self->_parse_duration($expires);
     $expires = $self->_epoch_to_gmtstring($expires);
-
     return $expires;
 }
 
@@ -81,12 +79,13 @@ sub _epoch_to_gmtstring {
     my @months = qw(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec);
     my @days   = qw(Sun Mon Tue Wed Thu Fri Sat);
 
-    return sprintf "%s, %02d-%s-%d %02d:%02d:%02d GMT",
-      $days[$wday],
-      $mday,
-      $months[$mon],
-      ($year + 1900),
-      $hour, $min, $sec;
+    return
+        sprintf "%s, %02d-%s-%d %02d:%02d:%02d GMT",
+        $days[$wday],
+        $mday,
+        $months[$mon],
+        ($year + 1900),
+        $hour, $min, $sec;
 }
 
 # This code is taken from Time::Duration::Parse, except if it isn't
@@ -139,7 +138,6 @@ sub _parse_duration {
 
     return sprintf "%.0f", $duration + time;
 }
-
 
 1;
 

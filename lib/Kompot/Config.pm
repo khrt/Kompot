@@ -21,7 +21,7 @@ sub init {
     $self->{_config} = $config;
 }
 
-sub cache_ttl { 0 }
+sub cache_ttl { 5 }
 
 sub root { shift->{app_root} }
 sub static { shift->{app_root} . '/static' }
