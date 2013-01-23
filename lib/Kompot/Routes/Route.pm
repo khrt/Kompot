@@ -1,22 +1,21 @@
 package Kompot::Routes::Route;
 
-use v5.12;
-
 use strict;
 use warnings;
 
 use utf8;
-use autodie;
+use v5.12;
+
+use autodie qw(open close);
 
 use DDP;
 use Carp;
 use File::stat;
-use Digest::SHA1 qw(sha1_hex);
+use Digest::SHA qw(sha1_hex);
 
 use base 'Kompot::Base';
 
 use Kompot::Response;
-
 
 sub init {
     my $self = shift;
@@ -29,20 +28,16 @@ sub init {
     map { $self->{$_} = $p->{$_} } keys(%$p);
 
     $self->_path_keys;
-
     $self->{cache_ttl} = $self->app->config->cache_ttl || 0;
 
     return 1;
 }
 
-sub cache_ttl { shift->{cache_ttl} }
-
+sub cache_ttl  { shift->{cache_ttl} }
 sub has_params { shift->{has_params} }
-
-sub code { shift->{code} }
-
 sub method { uc(shift->{method}) }
 sub path   { shift->{path} }
+sub code   { shift->{code} }
 
 sub path_re {
     my $self = shift;
@@ -69,11 +64,9 @@ sub match {
     my ($self, $path) = @_;
 
     my $re = $self->path_re;
-
     return if $path !~ $re;
 
     $self->parse_path_params;
-
     return 1;
 }
 
@@ -87,7 +80,6 @@ sub parse_path_params {
     }
 
     $self->{_params} = \%p || {};
-
     $self->app->request->_set_route_params($self->{_params});
 
     return $self->{_params};
@@ -101,9 +93,7 @@ sub _path_keys {
     my @p;
 
     while ($path =~ m#:([^/{]+)#g) {
-
         $self->{has_params} ||= 1;
-
         push(@p, $1);
     }
 
@@ -149,13 +139,10 @@ sub cache {
 
     # cache
     if ($res && $res->content && not $self->cached) {
-
         open my $fh, '>:encoding(UTF-8)', $file;
         print $fh $res->status . "\n";
         print $fh $res->content_type . "\n";
-
         for (@{ $res->content }) { print $fh $_ }
-
         close $fh;
 
         return 1;
@@ -184,7 +171,6 @@ sub cache {
 
     return $res;
 }
-
 
 1;
 

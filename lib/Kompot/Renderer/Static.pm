@@ -1,11 +1,11 @@
 package Kompot::Renderer::Static;
 
-use v5.12;
-
 use strict;
 use warnings;
 
 use utf8;
+use v5.12;
+
 use autodie qw(open close);
 
 use MIME::Types;
@@ -14,10 +14,8 @@ use base 'Kompot::Base';
 
 use Kompot::Response;
 
-
 sub init {
     my $self = shift;
-
     $self->{_mime_types} = MIME::Types->new(only_complete => 1);
 }
 
@@ -43,12 +41,10 @@ sub render {
         );
 }
 
-
 sub _mime_type {
     my ($self, $path) = @_;
 
     $path =~ /\.([\w\d]+)$/;
-
     my $ext = $1;
 
     my $type = $self->{_mime_types}->mimeTypeOf(lc($ext));

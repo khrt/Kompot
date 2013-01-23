@@ -1,16 +1,14 @@
 package Kompot::Renderer::EPL;
 
-use v5.12;
-
 use strict;
 use warnings;
 
 use utf8;
+use v5.12;
 
 use Mojo::Template;
 
 use base 'Kompot::Base';
-
 
 #sub render {
 #    my ( $self, $c, @p ) = @_;

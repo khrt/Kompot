@@ -23,10 +23,8 @@ sub init {
 }
 
 sub status {
-    my $self = shift;
-
-    $self->{status} = $_[0] if $_[0];
-
+    my ($self, $status) = @_;
+    $self->{status} = $status if $status;
     return $self->{status};
 }
 
@@ -74,8 +72,8 @@ sub content {
 }
 
 sub set_cookie {
-    my ($self, $cookie) = @_;
-    $self->header('Set-Cookie' => $cookie->to_string);
+    my ($self, $cookie_str) = @_;
+    $self->header('Set-Cookie' => $cookie_str);
 }
 
 1;

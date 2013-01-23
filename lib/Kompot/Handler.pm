@@ -1,75 +1,55 @@
 package Kompot::Handler;
 
-use v5.12;
-
 use strict;
 use warnings;
 
 use utf8;
+use v5.12;
 
 use DDP { output => 'stdout' };
 use Carp;
 
 use base 'Kompot::Base';
 
-
 sub start {
     my $self = shift;
-
     my $app = $self->psgi_app;
-
     return $app;
 }
 
 sub psgi_app {
     my $self = shift;
 
-    sub {
-        my $env = shift;
-        $self->app->request(env => $env);
-
-        $self->process_request;
-    };
+    return
+        sub {
+            my $env = shift;
+            $self->app->request(env => $env);
+            my $res = $self->process_request;
+            return $res;
+        };
 }
 
 sub process_request {
     my $self = shift;
 
-#    Dancer::SharedData->reset_all( reset_vars => !$request->is_forward);
-
-    # read cookies from client
-#    Dancer::Cookies->init;
-
     my $app = $self->app;
 
-    my $response;
-
-    eval { $response = $app->routes->dispatch; };
+    my $res;
+    eval { $res = $app->routes->dispatch };
 
     if ($@) {
-        $response = $app->render->internal_error($@);
+        $res = $app->render->internal_error($@);
     }
 
-    return $self->render_response($response);
-}
-
-sub render_response {
-    my ($self, $r) = @_;
-
-    # drop content AND content_length if reponse is 1xx or (2|3)04
-    if ($r->status =~ /^(?:2|3)04$/) {
-        $r->{content} = [''];
-        $r->header('content-length' => 0);
+    # drop `content` and `content_length`
+    # if `response` is `1xx` or `204`, `304`
+    if ($res->status =~ /^(?:2|3)04$|^1\d{2}$/) {
+        $res->{content} = [''];
+        $res->header('content-length' => 0);
     }
 
-    # drop content if request is HEAD
-#    $content = ['']
-#        if ( defined Dancer::SharedData->request
-#        && Dancer::SharedData->request->is_head() );
-
-    return [$r->status, $r->headers, $r->content];
+    return [$res->status, $res->headers, $res->content];
 }
-
 
 1;
 

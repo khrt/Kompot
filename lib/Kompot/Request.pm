@@ -1,19 +1,16 @@
 package Kompot::Request;
 
-use v5.12;
-
 use strict;
 use warnings;
 
 use utf8;
+use v5.12;
 
 use DDP { output => 'stdout' };
 use Carp;
 use URI::Escape;
 
 use base 'Kompot::Base';
-
-use Kompot::Cookie;
 
 sub init {
     my $self = shift;
@@ -55,6 +52,10 @@ sub param {
 sub cookie {
     my ($self, $name) = @_;
     return $self->{_cookies}->{$name}; # XXX
+}
+sub cookies {
+    my $self = shift;
+    return $self->{_cookies};
 }
 
 sub _set_route_params {
@@ -114,8 +115,8 @@ sub _parse_query_params {
 
     return $self->{_query_params} if defined $self->{_query_params};
 
-    $self->{_query_params} = $self->_parse_params($self->env->{QUERY_STRING})
-        || {};
+    $self->{_query_params}
+        = $self->_parse_params($self->env->{QUERY_STRING}) || {};
 
     return $self->{_query_params};
 }
@@ -215,7 +216,6 @@ sub _url_decode {
 
     return $data;
 }
-
 
 1;
 

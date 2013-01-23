@@ -1,11 +1,10 @@
 package Kompot::Renderer::Text;
 
-use v5.12;
-
 use strict;
 use warnings;
 
 use utf8;
+use v5.12;
 
 use base 'Kompot::Base';
 

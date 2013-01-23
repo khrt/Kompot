@@ -1,11 +1,10 @@
 package Kompot::Session;
 
-use v5.12;
-
 use strict;
 use warnings;
 
 use utf8;
+use v5.12;
 
 use Carp;
 use DDP { output => 'stdout' };
@@ -15,31 +14,56 @@ use MIME::Base64;
 
 use base 'Kompot::Base';
 
-sub decode {
-    my ($self, $value) = @_;
+use Kompot::Cookie;
 
-    if ($value =~ s/--([^\-]+)$//) {
+my $cookie_name    = 'kompot';
+my $cookie_path    = '/';
+my $cookie_expires = 30 * 60;
+
+# from cookie to session values
+sub load_params {
+    my ($self, $cookies) = @_;
+    my $cookie = $cookies->{$cookie_name} or return {};
+    my $params = $self->decode($cookie->value);
+    return $params || {};
+}
+
+# from session values to cookie
+sub generate_cookie {
+    my ($self, $p) = @_;
+
+    my $cookie = Kompot::Cookie->new(
+        name      => $cookie_name,
+        value     => $self->encode($p),
+        path      => $cookie_path,
+        expires   => $cookie_expires,
+        http_only => 1,
+    );
+
+    return $cookie;
+}
+
+sub decode {
+    my ($self, $v) = @_;
+
+    if ($v =~ s/--([^\-]+)$//) {
         my $sign = $1;
 
-        my $secret = 'secret'; # TODO $self->app->secret
-        my $check_value = hmac_sha1_hex($value, $secret);
-say "dec>>>sign>>>$sign";
-say "dec>>>check_value>>>check_value>>$value";
+        my $secret = $self->app->secret;
+        my $check_value = hmac_sha1_hex($v, $secret);
 
         if (not secure_compare($sign, $check_value)) {
-            # log message
             carp 'cookie sign is incorrect';
             return;
         }
     }
     else {
-        # cookie is not signed
         carp 'cookie is not signed';
         return;
     }
 
-    $value =~ s/-/=/g;
-    my $p = decode_json(decode_base64($value)) or return;
+    $v =~ s/-/=/g;
+    my $p = decode_json(decode_base64($v)) or return;
 
     return $p;
 }
@@ -49,32 +73,23 @@ sub encode {
 
     return if not keys %$p;
 
-    my $value = encode_base64(encode_json($p), '');
-    $value =~ s/=/-/g;
+    my $v = encode_base64(encode_json($p), '');
+    $v =~ s/=/-/g;
 
-    # get secret
-    my $secret = 'secret'; # TODO $self->app->secret
+    my $secret = $self->app->secret;
 
-    my $hex = hmac_sha1_hex($value, $secret);
-
-say "enc>>>value>>>$value";
-say "enc>>>hex>>>$hex";
-    $value = $value . '--' . $hex;
-
-    return $value;
+    $v = $v . '--' . hmac_sha1_hex($v, $secret);
+    return $v;
 }
 
 # Mojo::Util
 sub secure_compare {
     my ($a, $b) = @_;
     return undef if length $a != length $b;
-say ">>>secure_compare>>";
     my $r = 0;
     $r |= ord(substr $a, $_) ^ ord(substr $b, $_) for 0 .. length($a) - 1;
-say ">>>secure_compare>>$r";
     return $r == 0;
 }
-
 
 1;
 

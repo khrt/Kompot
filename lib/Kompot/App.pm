@@ -1,12 +1,12 @@
 package Kompot::App;
 
-use v5.12;
-
 use strict;
 use warnings;
 
 use utf8;
+use v5.12;
 
+use Carp;
 use DDP { output => 'stdout' };
 
 use base 'Kompot::Base';
@@ -16,13 +16,18 @@ use Kompot::Handler;
 use Kompot::Renderer;
 use Kompot::Routes;
 
-
 sub name { 'Kompot' . $Kompot::VERSION }
 
-# XXX NEED SECRET
 sub secret {
     my ($self, $value) = @_;
-    state $secret = $value;
+
+    state $secret;
+
+    if ($value) {
+        carp 'set secret value';
+        $secret = $value;
+    }
+
     return $secret;
 }
 
@@ -31,7 +36,7 @@ sub request {
 
     state $_request;
     
-    if ( scalar @_ ) {
+    if (scalar @_) {
         $_request = Kompot::Request->new(@_);
     }
 
@@ -45,7 +50,7 @@ sub routes { state $_route ||= Kompot::Routes->new }
 sub route  { goto &routes }
 
 sub config { state $_config ||= Kompot::Config->new }
-sub dir { shift->config }
+sub dir { goto &config }
 
 #
 # Main function
@@ -55,6 +60,11 @@ sub run {
     my $cfg = $self->config;
 #p($cfg);
 
+    if (not $self->secret) {
+        carp 'no secret';
+        return;
+    }
+
     my $handler = Kompot::Handler->new;
 #p($handler);
 
@@ -63,7 +73,6 @@ sub run {
 
     return $response;
 }
-
 
 1;
 

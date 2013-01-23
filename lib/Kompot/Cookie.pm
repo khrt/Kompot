@@ -1,11 +1,10 @@
 package Kompot::Cookie;
 
-use v5.12;
-
 use strict;
 use warnings;
 
 use utf8;
+use v5.12;
 
 use DDP { output => 'stdout' };
 use Carp;
@@ -15,15 +14,16 @@ use base 'Kompot::Base';
 
 sub init {
     my $self = shift;
-
     my $cookie = @_ % 2 ? $_[0] : {@_};
 
     if (ref($cookie)) {
-        map { $self->{$_} = $cookie->{$_} // undef }
-            qw(name value domain secure http_only);
-
-        $self->{path} = $cookie->{path} || '/';
-        $self->{expires} = $self->_expires($cookie->{expires});
+        $self->{name}      = $cookie->{name}      || 'kompot';
+        $self->{value}     = $cookie->{value}     || '';
+        $self->{path}      = $cookie->{path}      || '/';
+        $self->{expires}   = $self->_expires($cookie->{expires});
+        $self->{domain}    = $cookie->{domain}    || '';
+        $self->{secure}    = $cookie->{secure}    || '';
+        $self->{http_only} = $cookie->{http_only} || 1;
     }
     else {
         $self->parse($cookie);
@@ -32,15 +32,8 @@ sub init {
     return 1;
 }
 
-###
-sub name      { shift->{name}  }
-sub path      { shift->{path}  }
-sub value     { shift->{value} }
-sub expires   { shift->{expires} }
-sub domain    { shift->{domain}  }
-sub secure    { defined(shift->{secure})    ? 1 : 0 }
-sub http_only { defined(shift->{http_only}) ? 1 : 0 }
-###
+sub name { shift->{name} }
+sub value { shift->{value} }
 
 sub parse {
     my ($self, $cookie) = @_;
@@ -48,17 +41,9 @@ sub parse {
     my ($name, $value) = split(/\s*=\s*/, $cookie, 2);
 
     $self->{name}  = $name;
-    $self->{value} = $value;
+    $self->{value} = uri_unescape($value);
 
-    my @values;
-
-    if ($value) {
-        @values = map { uri_unescape($_) } split(/[&;]/, $value);
-    }
-
-    $self->{_values} = \@values;
-
-    return $self;
+    return 1;
 }
 
 sub to_string {
@@ -76,7 +61,6 @@ sub to_string {
     push @cookie, 'HttpOnly' if $self->{http_only};
 
     my $cookie_str = join '; ', @cookie;
-say ">>cookie_str--$cookie_str<<";
 
     if (length $cookie_str > 4096) {
         carp 'cookie > 4096';

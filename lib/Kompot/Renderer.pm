@@ -1,11 +1,10 @@
 package Kompot::Renderer;
 
-use v5.12;
-
 use strict;
 use warnings;
 
 use utf8;
+use v5.12;
 
 use DDP { output => 'stdout' };
 use Carp;
@@ -16,9 +15,7 @@ use Kompot::Renderer::EPL;
 use Kompot::Renderer::JSON;
 use Kompot::Renderer::Static;
 use Kompot::Renderer::Text;
-
 use Kompot::Response;
-
 
 #sub helpers { shift->{helpers} }
 #
@@ -32,14 +29,12 @@ use Kompot::Response;
 #    return 1;
 #}
 
-
 sub dynamic {
     my ($self, $c, $p) = @_;
 
     $p ||= {};
 
     my $stash = $c->stash;
-
 #p $p;
 #p $stash;
 
@@ -91,8 +86,7 @@ sub static {
 }
 
 sub not_found {
-    my $self  = shift;
-    my $error = shift;
+    my ($self, $error) = @_;
 
     my $r =
         Kompot::Response->new(
@@ -105,8 +99,7 @@ sub not_found {
 }
 
 sub internal_error {
-    my $self  = shift;
-    my $error = shift;
+    my ($self, $error) = @_;
 
     my $r =
         Kompot::Response->new(

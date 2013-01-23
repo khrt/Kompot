@@ -1,22 +1,27 @@
 package Kompot::Controller;
 
-use v5.12;
-
 use strict;
 use warnings;
 
 use utf8;
+use v5.12;
 
 use DDP { output => 'stdout' };
 
 use base 'Kompot::Base';
 
 use Kompot::Renderer;
+use Kompot::Session;
 
 sub init {
     my $self = shift;
 
     $self->{req} = shift;
+
+    # Init session
+    $self->session(Kompot::Session->new->load_params($self->{req}->cookies));
+
+    return 1;
 }
 
 sub req { shift->{req} }
@@ -40,7 +45,7 @@ sub stash {
     return $stash if not @_;
 
     # one
-    return $stash->{ $_[0] } if @_ == 1;
+    return $stash->{ $_[0] } if @_ == 1 and not ref $_[0];
 
     # new
     my $v = @_ % 2 ? $_[0] : {@_};
@@ -51,7 +56,6 @@ sub stash {
 
 sub session {
     my $self = shift;
-p @_;
 
     my $session = $self->stash->{'kompot.session'} ||= {};
 
@@ -59,7 +63,7 @@ p @_;
     return $session if not @_;
 
     # one
-    return $session->{ $_[0] } if @_ == 1;
+    return $session->{ $_[0] } if @_ == 1 and not ref $_[0];
 
     # new
     my $v = @_ % 2 ? $_[0] : {@_};
@@ -75,16 +79,20 @@ sub render {
 
     my $template = $p->{template} ? $p->{template} : undef;
 
-
     my $text = $p->{text};
     my $json = $p->{json};
 
-
     my $app = $self->app;
 
-    $app->render->dynamic($self, $p);
-}
+    my $r = $app->render->dynamic($self, $p);
+    if ($r && $r->status == 200) {
+        # Set cookie
+        my $cookie = Kompot::Session->new->generate_cookie($self->session);
+        $r->set_cookie($cookie->to_string) if $cookie;
+    }
 
+    return $r;
+}
 
 1;
 

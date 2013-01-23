@@ -95,10 +95,13 @@ get '/route/:p/:pp' => sub {
 get '/session/set' => sub {
     my $self = shift;
 
-    $self->session(test => 'value');
-    $self->session(value => 'test');
+    my $test = $self->param('test') || 'default';
+    my $value = $self->param('value') || 'default';
 
-    $self->render(text => 'Set cookie.');
+    $self->session(test => $test);
+    $self->session(value => $value);
+
+    $self->render(text => "Set cookie: test => `$test`, value => `$value`.");
 };
 
 get '/session/get' => sub {
@@ -110,6 +113,7 @@ get '/session/get' => sub {
     $self->render(text => "Get cookie: $p1/$p2");
 };
 
+app->secret('verysecret');
 app->start;
 
 __DATA__

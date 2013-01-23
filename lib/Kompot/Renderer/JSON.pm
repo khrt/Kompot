@@ -1,11 +1,10 @@
 package Kompot::Renderer::JSON;
 
-use v5.12;
-
 use strict;
 use warnings;
 
 use utf8;
+use v5.12;
 
 use JSON::XS;
 
@@ -18,9 +17,7 @@ sub render {
 
     my $p = {@_};
 
-    my $json = encode_json($p->{json});
-
-    return if not $json;
+    my $json = encode_json($p->{json}) or return;
 
     return
         Kompot::Response->new(
@@ -29,7 +26,6 @@ sub render {
             status       => 200,
         );
 }
-
 
 1;
 
