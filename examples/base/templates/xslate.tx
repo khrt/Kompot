@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title><: $title :></title>
+</head>
+<body>
+  <h1><: $head :></h1>
+  <p><: $p :></p>
+  <pre><: dummy() :></pre>
+</body>
+</html>
