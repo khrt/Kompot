@@ -6,7 +6,7 @@ use warnings;
 use utf8;
 use v5.12;
 
-our $VERSION = '0.11';
+our $VERSION = '0.15';
 
 use FindBin;
 

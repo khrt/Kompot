@@ -27,6 +27,13 @@ sub init {
 
 sub req { shift->{req} }
 
+sub add_helper {
+    my ($self, $name, $cb) = @_;
+    $self->{helpers}{$name} = $cb;
+}
+
+sub helpers { shift->{helpers} }
+
 sub params {
     my $self = shift;
     return $self->req->params;
@@ -39,7 +46,6 @@ sub param {
 
 sub stash {
     my $self = shift;
-
     my $stash = $self->{stash} ||= {};
 
     # all
@@ -55,7 +61,6 @@ sub stash {
 
 sub session {
     my $self = shift;
-
     my $session = $self->stash->{'kompot.session'} ||= {};
 
     # all

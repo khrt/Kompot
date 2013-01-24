@@ -15,22 +15,39 @@ use base 'Kompot::Base';
 
 use Kompot::Response;
 
-# TODO update stash code or think of something else
-sub stash {
-    my ($self, $key) = @_;
-    return $key ? $self->{stash}{$key} : $self->{stash};
+sub init {
+    my ($self, $c) = @_;
+    $self->{controller} = $c or return;
+    $self->register_default_helpers;
+    return 1;
 }
 
+sub c { shift->{controller} }
 
-sub helpers {}
-sub register_default_helpers {}
-sub add_helper {}
+sub register_default_helpers {
+    my $self = shift;
+    my $c = $self->c;
+
+    $c->add_helper(dummy => sub { 'DUMMY' });
+
+    # from Mojolicious::Plugin::DefaultHelpers
+    for my $name (qw(layout title)) {
+        $c->add_helper(
+            $name => sub {
+                my $self  = shift;
+                my $stash = $self->stash;
+
+                $stash->{$name} = shift if @_;
+                $self->stash(@_) if @_;
+
+                return $stash->{$name};
+            }
+        );
+    }
+}
 
 sub render {
-    my ($self, $name, %p) = @_;
-
-    # set stash
-    $self->{stash} = \%p;
+    my ($self, $name) = @_;
 
     my $tmpl = $self->_template_path($name) or return;
     my $out = $self->_process($tmpl) or return;
@@ -68,7 +85,7 @@ sub _template_path {
 sub _extends {
     my $self = shift;
 
-    my $stash = $self->stash;
+    my $stash = $self->c->stash;
     my $layout = delete $stash->{layout};
 
     $stash->{extends} ||= join('/', 'layouts', $layout) if $layout;
@@ -79,8 +96,9 @@ sub _extends {
 sub _process {
     my ($self, $tmpl) = @_;
 
-    my $stash = $self->stash;
-    my $helpers = $self->helpers;
+    my $c = $self->c;
+    my $stash   = $c->stash;
+    my $helpers = $c->helpers;
 
     my $prepend = q/
 my $self = shift;
@@ -108,11 +126,12 @@ my $_H = $self->helpers;
     my $mt = Mojo::Template->new(encoding => 'UTF-8');
     $mt->prepend($prepend);
 
-    my $out = $mt->name($tmpl)->render_file($tmpl, $self);
+    my $out = $mt->name($tmpl)->render_file($tmpl, $c);
 
-    # TODO: Detect fails
-    # if rendering failed Mojo::Template does not tell us about it anything
-    # and just returns an error as a plain text, the same as it do in success
+    if (ref $out) {
+        carp 'Render error: ' . $out->to_string;
+        return;
+    }
 
     return $out;
 }

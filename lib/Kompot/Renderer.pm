@@ -44,7 +44,7 @@ sub dynamic {
     }
     elsif (defined($template)) {
         my $renderer = $self->app->conf->renderer;
-        $r = $renderer->new->render($template, %$p);
+        $r = $renderer->new($c)->render($template);
     }
     else {
         $r = $self->internal_error('No renderer');
