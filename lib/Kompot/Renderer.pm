@@ -12,6 +12,7 @@ use Carp;
 use base 'Kompot::Base';
 
 use Kompot::Renderer::JSON;
+use Kompot::Renderer::MojoTemplate;
 use Kompot::Renderer::Static;
 use Kompot::Renderer::Text;
 use Kompot::Response;
@@ -37,15 +38,13 @@ sub dynamic {
     if (defined($json)) {
         $r = Kompot::Renderer::JSON->new->render(json => $json);
     }
-    elsif (defined($template)) {
-        # Xslate
-        # TT2
-        # Mojo::Template
-        croak 'renderer not defined';
-    }
     # Text
     elsif (defined($text)) {
         $r = Kompot::Renderer::Text->new->render(text => $text, params => $p);
+    }
+    elsif (defined($template)) {
+        my $renderer = $self->app->conf->renderer;
+        $r = $renderer->new->render($template, %$p);
     }
     else {
         $r = $self->internal_error('No renderer');

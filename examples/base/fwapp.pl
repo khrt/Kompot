@@ -113,6 +113,18 @@ get '/session/get' => sub {
     $self->render(text => "Get cookie: $p1/$p2");
 };
 
+get '/render/mojo' => sub {
+    my $self = shift;
+
+    $self->stash(
+        title => 'Test',
+        head  => 'Head',
+        p     => 'Paragraph',
+    );
+
+    $self->render(template => 'mojo.ep');
+};
+
 app->secret('verysecret');
 app->start;
 

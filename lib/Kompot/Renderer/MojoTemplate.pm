@@ -7,6 +7,7 @@ use utf8;
 use v5.12;
 
 use Carp;
+use DDP { output => 'stdout' };
 use File::Spec::Functions 'catfile';
 use Mojo::Template;
 
@@ -14,35 +15,28 @@ use base 'Kompot::Base';
 
 use Kompot::Response;
 
-sub init {
-    my $self = shift;
-
-    my $conf = $self->app->conf;
-
-    my $cache_dir = $conf->cache_dir;
-    my @paths     = $conf->template_paths;
-
-    $self->{mt} = Mojo::Template->new(encoding => 'UTF-8');
-
-    return 1;
+# TODO update stash code or think of something else
+sub stash {
+    my ($self, $key) = @_;
+    return $key ? $self->{stash}{$key} : $self->{stash};
 }
 
-sub stash {die}
-sub helpers {die}
-sub register_default_helpers {die}
-sub add_helper {die}
-sub paths {die}
+
+sub helpers {}
+sub register_default_helpers {}
+sub add_helper {}
 
 sub render {
-    my ($self, %p) = @_;
+    my ($self, $name, %p) = @_;
 
-    my $name = delete($p{template});
+    # set stash
+    $self->{stash} = \%p;
+
     my $tmpl = $self->_template_path($name) or return;
-
     my $out = $self->_process($tmpl) or return;
 
     while (my $extends = $self->_extends($self)) {
-        my $self->stash(content => $out);
+        $self->stash(content => $out);
         $tmpl = $self->_template_path($extends) or return;
         $out = $self->_process($tmpl) or return;
     }
@@ -60,7 +54,9 @@ sub _template_path {
 
     return if not $name;
 
-    for my $path (@{ $self->{paths} }) {
+    my $paths = $self->app->conf->renderer_paths;
+
+    for my $path (@$paths) {
         my $file = catfile($path, split('/', $name));
         return $file if -r $file;
     }
@@ -75,7 +71,7 @@ sub _extends {
     my $stash = $self->stash;
     my $layout = delete $stash->{layout};
 
-    $stash->{extends} ||= join('/', 'layouts', $layout);
+    $stash->{extends} ||= join('/', 'layouts', $layout) if $layout;
 
     return delete $stash->{extends};
 }
@@ -109,15 +105,14 @@ my $_H = $self->helpers;
 
     $prepend =~ s/\R//gs;
 
-    my $mt = $self->{mt};
+    my $mt = Mojo::Template->new(encoding => 'UTF-8');
     $mt->prepend($prepend);
 
     my $out = $mt->name($tmpl)->render_file($tmpl, $self);
 
-    if (ref $out) {
-        carp 'Rendering file failed: ' . $out->to_string;
-        return;
-    }
+    # TODO: Detect fails
+    # if rendering failed Mojo::Template does not tell us about it anything
+    # and just returns an error as a plain text, the same as it do in success
 
     return $out;
 }

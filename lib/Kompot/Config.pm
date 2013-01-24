@@ -7,49 +7,60 @@ use utf8;
 use v5.12;
 
 use FindBin qw($Bin);
-#use YAML::XS qw(LoadFile);
 
 use base 'Kompot::Base';
 
 sub init {
     my $self = shift;
 
-    my $root = $self->{app_root} = $Bin;
+    $self->{app_root} = $Bin;
 
-    my $config_file = '';
-    my $config = '';#LoadFile();
-    $self->{_config} = $config;
+    # default template paths
+    $self->renderer_paths('/templates');
 }
 
 sub cache_ttl { 5 }
 
+#
+# Paths
+#
 sub root { shift->{app_root} }
 sub static { shift->{app_root} . '/static' }
 
 #
-# Templates
+# Renderer
 #
+sub renderer {
+    my ($self, $renderer) = @_;
+    $self->{renderer} = $renderer if $renderer;
+    return $self->{renderer} || 'Kompot::Renderer::MojoTemplate';
+}
 
+sub renderer_paths {
+    my ($self, $path) = @_;
+    push(@{ $self->{template_paths} }, $self->root . $path) if $path;
+    return $self->{template_paths};
+}
 
 #
 # Cookie
 #
 sub secret {
     my ($self, $secret) = @_;
-    $self->{_secret} = $secret if $secret;
-    return $self->{_secret};
+    $self->{secret} = $secret if $secret;
+    return $self->{secret};
 }
 
 sub cookie_name {
     my ($self, $name) = @_;
-    $self->{_cookie_name} = $name if $name;
-    return $self->{_cookie_name} || 'kompot';
+    $self->{cookie_name} = $name if $name;
+    return $self->{cookie_name} || 'kompot';
 }
 
 sub cookie_expires {
     my ($self, $expires) = @_;
-    $self->{_cookie_expires} = $expires if $expires;
-    return $self->{_cookie_expires} || 60 * 60; # one hour by default
+    $self->{cookie_expires} = $expires if $expires;
+    return $self->{cookie_expires} || 60 * 60; # one hour by default
 }
 
 1;
