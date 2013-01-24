@@ -28,12 +28,12 @@ sub root { shift->{app_root} }
 sub static { shift->{app_root} . '/static' }
 
 #
-# Renderer
+# TODO Move to Renderer
 #
-sub renderer {
+sub renderer { # TODO Rename to `engine`
     my ($self, $renderer) = @_;
     $self->{renderer} = $renderer if $renderer;
-    return $self->{renderer} || 'Kompot::Renderer::MojoTemplate';
+    return $self->{renderer} || 'Kompot::Renderer::Xslate';
 }
 
 sub renderer_paths {

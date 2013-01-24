@@ -117,12 +117,24 @@ get '/render/mojo' => sub {
     my $self = shift;
 
     $self->stash(
-        title => 'Test',
-        head  => 'Head',
-        p     => 'Paragraph',
+        title => 'Hello, World!',
+        head  => 'Mojo::Template',
+        p     => 'This is paragraph.',
     );
 
     $self->render(template => 'mojo.ep');
+};
+
+get '/render/xslate' => sub {
+    my $self = shift;
+
+    $self->stash(
+        title => 'Hello, World!',
+        head  => 'Text::Xslate',
+        p     => 'This is paragraph.',
+    );
+
+    $self->render(template => 'xslate.tx');
 };
 
 app->secret('verysecret');

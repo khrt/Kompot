@@ -13,30 +13,35 @@ use base 'Kompot::Base';
 use Kompot::Response;
 
 sub init {
-    my ($self, %xslate) = @_;
-
-    my $conf = $self->app->conf;
-
-    my $cache_dir = $conf->cache_dir;
-    my @paths     = $conf->template_paths;
-
-    $self->{xslate} =
-        Text::Xslate->new({
-            cache_dir => $cache_dir,
-            path      => \@paths,
-            %xslate,
-        });
-
+    my ($self, $c) = @_;
+    $self->{controller} = $c or return;
+    $self->register_default_helpers;
     return 1;
 }
 
-sub render {
-    my ($self, %p) = @_;
+sub c { shift->{controller} }
 
-    my $name = delete($p{template}); # TODO use getpath function
+sub register_default_helpers {
+    my $self = shift;
+    my $c = $self->c;
+    $c->add_helper(dummy => sub { 'DUMMY' });
+}
+
+sub render {
+    my ($self, $name, %options) = @_;
+
+    my $c = $self->c;
+
+    my $xslate =
+        Text::Xslate->new({
+#            cache_dir => $cache_dir, # TODO
+            path      => $self->app->conf->renderer_paths,
+            function  => $c->helpers,
+            %options,
+        });
 
     my $out;
-    eval { $out = $self->{xslate}->render($name, \%p); };
+    eval { $out = $xslate->render($name, $c->stash); };
     if ($@) {
         carp $@;
         $out = '';

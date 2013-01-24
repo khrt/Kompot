@@ -15,6 +15,7 @@ use Kompot::Renderer::JSON;
 use Kompot::Renderer::MojoTemplate;
 use Kompot::Renderer::Static;
 use Kompot::Renderer::Text;
+use Kompot::Renderer::Xslate;
 use Kompot::Response;
 
 sub dynamic {

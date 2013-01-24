@@ -27,11 +27,13 @@ sub init {
 
 sub req { shift->{req} }
 
+# TODO Move to Renderer?
 sub add_helper {
     my ($self, $name, $cb) = @_;
     $self->{helpers}{$name} = $cb;
 }
 
+# TODO Move to Renderer?
 sub helpers { shift->{helpers} }
 
 sub params {
