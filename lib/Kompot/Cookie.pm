@@ -19,9 +19,7 @@ sub init {
     if (ref($cookie)) {
         foreach (qw(name value path domain)) {
             my $v = $cookie->{$_};
-            if (not $v) {
-                carp "Missed required field: `$_`";
-            }
+#            carp "Missed required field: `$_`" if not $v;
             $self->{$_} = $v;
         }
 
@@ -40,6 +38,7 @@ sub value { shift->{value} }
 
 sub parse {
     my ($self, $cookie_str) = @_;
+    return '' if not $cookie_str;
     my ($name, $value) = split(/\s*=\s*/, $cookie_str, 2);
     return ($name, uri_unescape($value));
 }

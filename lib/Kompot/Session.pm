@@ -66,7 +66,7 @@ sub decode {
         }
     }
     else {
-        carp 'cookie is not signed';
+        carp 'cookie is not signed' if $v;
         return;
     }
 
