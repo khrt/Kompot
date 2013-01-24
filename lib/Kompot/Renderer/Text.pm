@@ -11,12 +11,10 @@ use base 'Kompot::Base';
 use Kompot::Response;
 
 sub render {
-    my $self = shift;
+    my ($self, %p) = @_;
 
-    my $p = {@_};
-
-    my $pp   = delete($p->{params});
-    my $text = delete($p->{text});
+    my $pp   = delete($p{params});
+    my $text = delete($p{text});
 
     # substitute values
     foreach my $ph (keys(%$pp)) {
@@ -30,7 +28,6 @@ sub render {
             status       => 200,
         );
 }
-
 
 1;
 

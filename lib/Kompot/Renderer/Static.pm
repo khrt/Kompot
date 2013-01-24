@@ -7,7 +7,6 @@ use utf8;
 use v5.12;
 
 use autodie qw(open close);
-
 use MIME::Types;
 
 use base 'Kompot::Base';
@@ -48,10 +47,8 @@ sub _mime_type {
     my $ext = $1;
 
     my $type = $self->{_mime_types}->mimeTypeOf(lc($ext));
-
     return $type || 'application/data';
 }
-
 
 1;
 

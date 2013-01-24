@@ -13,12 +13,9 @@ use base 'Kompot::Base';
 use Kompot::Response;
 
 sub render {
-    my $self = shift;
+    my ($self, %p) = @_;
 
-    my $p = {@_};
-
-    my $json = encode_json($p->{json}) or return;
-
+    my $json = encode_json($p{json}) or return;
     return
         Kompot::Response->new(
             content_type => 'application/json',
