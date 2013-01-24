@@ -29,12 +29,8 @@ sub status {
 }
 
 sub content_type {
-    my $self = shift;
-
-    if (scalar @_) {
-        $self->headers('content-type' => shift);
-    }
-
+    my ($self, $ctype) = @_;
+    $self->headers('content-type' => $ctype) if $ctype;
     return $self->headers('content-type');
 }
 
@@ -73,7 +69,7 @@ sub content {
 
 sub set_cookie {
     my ($self, $cookie_str) = @_;
-    $self->header('Set-Cookie' => $cookie_str);
+    $self->header('set-cookie' => $cookie_str);
 }
 
 1;

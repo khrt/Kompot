@@ -18,12 +18,12 @@ sub init {
     my $conf = $self->app->conf;
 
     my $cache_dir = $conf->cache_dir;
-    my @path      = $conf->template_paths;
+    my @paths     = $conf->template_paths;
 
     $self->{xslate} =
         Text::Xslate->new({
             cache_dir => $cache_dir,
-            path      => \@path,
+            path      => \@paths,
             %xslate,
         });
 
@@ -33,10 +33,10 @@ sub init {
 sub render {
     my ($self, %p) = @_;
 
-    my $tmpl = delete($p{template});
+    my $name = delete($p{template}); # TODO use getpath function
 
     my $out;
-    eval { $out = $self->{xslate}->render($tmpl, \%p); };
+    eval { $out = $self->{xslate}->render($name, \%p); };
     if ($@) {
         carp $@;
         $out = '';

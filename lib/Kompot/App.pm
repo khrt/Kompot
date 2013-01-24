@@ -26,18 +26,18 @@ sub secret {
 
 sub request { 
     my $self = shift;
-    state $_request;
-    $_request = Kompot::Request->new(@_) if scalar @_;
-    return $_request;
+    state $request;
+    $request = Kompot::Request->new(@_) if scalar @_;
+    return $request;
 }
 
-sub renderer { state $_renderer ||= Kompot::Renderer->new }
+sub renderer { state $renderer ||= Kompot::Renderer->new }
 sub render   { goto &renderer }
 
-sub routes { state $_route ||= Kompot::Routes->new }
+sub routes { state $route ||= Kompot::Routes->new }
 sub route  { goto &routes }
 
-sub conf { state $_conf ||= Kompot::Config->new }
+sub conf { state $conf ||= Kompot::Config->new }
 
 
 #

@@ -11,23 +11,10 @@ use Carp;
 
 use base 'Kompot::Base';
 
-use Kompot::Renderer::EPL;
 use Kompot::Renderer::JSON;
 use Kompot::Renderer::Static;
 use Kompot::Renderer::Text;
 use Kompot::Response;
-
-#sub helpers { shift->{helpers} }
-#
-#sub add_helper {
-#    my ( $self, $name, $code ) = @_;
-#
-#    carp "Replace helper $name!" if $self->{helpers}->{$name};
-#
-#    $self->{helpers}->{$name} = $code;
-#
-#    return 1;
-#}
 
 sub dynamic {
     my ($self, $c, $p) = @_;
@@ -129,7 +116,6 @@ sub _is_text {
     my ($self, $content_type) = @_;
     return $content_type =~ /(x(?:ht)?ml|text|json|javascript)/;
 }
-
 
 1;
 
