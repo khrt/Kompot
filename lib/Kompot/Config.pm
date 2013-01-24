@@ -27,6 +27,11 @@ sub root { shift->{app_root} }
 sub static { shift->{app_root} . '/static' }
 
 #
+# Templates
+#
+
+
+#
 # Cookie
 #
 sub secret {

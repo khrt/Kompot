@@ -10,6 +10,19 @@ use Carp;
 
 #sub import {
 #    my $class = shift;
+#
+#    no strict 'refs';
+#    my $caller = caller;
+#    *{"${caller}::attr"} = sub { attr($caller, @_) };
+#}
+#
+#sub attr {
+#    my ($class, $name, $default) = @_;
+#    sub {
+#        my ($self, $value) = @_;
+#        $self->{$name} = $value if $value;
+#        return $self->{$name} || $default;
+#    };
 #}
 
 sub new {
