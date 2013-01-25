@@ -12,6 +12,9 @@ use URI::Escape;
 
 use base 'Kompot::Base';
 
+__PACKAGE__->attr(name  => undef);
+__PACKAGE__->attr(value => undef);
+
 sub init {
     my $self = shift;
     my $cookie = @_ % 2 ? $_[0] : {@_};
@@ -19,7 +22,6 @@ sub init {
     if (ref($cookie)) {
         foreach (qw(name value path domain)) {
             my $v = $cookie->{$_};
-#            carp "Missed required field: `$_`" if not $v;
             $self->{$_} = $v;
         }
 
@@ -34,11 +36,9 @@ sub init {
     return 1;
 }
 
-sub value { shift->{value} }
-
 sub parse {
     my ($self, $cookie_str) = @_;
-    return '' if not $cookie_str;
+    return if not $cookie_str;
     my ($name, $value) = split(/\s*=\s*/, $cookie_str, 2);
     return ($name, uri_unescape($value));
 }

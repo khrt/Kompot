@@ -16,13 +16,12 @@ use base 'Kompot::Base';
 
 use Kompot::Cookie;
 
+__PACKAGE__->attr(cookie => '');
+
 sub init {
     my ($self, $cookie_str) = @_;
-    $self->{_cookie} = Kompot::Cookie->new($cookie_str);
-    return 1;
+    $self->cookie(Kompot::Cookie->new($cookie_str));
 }
-
-sub cookie { shift->{_cookie} }
 
 # from cookie to session values
 sub params {
@@ -47,14 +46,13 @@ sub store {
     );
 
     my $cookie = Kompot::Cookie->new(%params);
-
     return $cookie;
 }
 
 sub decode {
     my ($self, $v) = @_;
 
-    if ($v =~ s/--([^\-]+)$//) {
+    if ($v && $v =~ s/--([^\-]+)$//) {
         my $sign = $1;
 
         my $secret = $self->app->secret;
@@ -72,7 +70,6 @@ sub decode {
 
     $v =~ s/-/=/g;
     my $p = decode_json(decode_base64($v)) or return;
-
     return $p;
 }
 

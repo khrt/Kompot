@@ -12,12 +12,18 @@ use URI::Escape;
 
 use base 'Kompot::Base';
 
+__PACKAGE__->attr(env            => {});
+__PACKAGE__->attr(content_length => 0);
+__PACKAGE__->attr(input_handle   => undef);
+__PACKAGE__->attr(is_forward     => 0);
+__PACKAGE__->attr(method         => undef);
+__PACKAGE__->attr(path           => '/');
+__PACKAGE__->attr(uri            => undef);
+
 sub init {
     my $self = shift;
-
-    my $p = @_ % 2 ? @_ : {@_};
-
-    $self->{env} = $p->{env};
+    my $p    = @_ % 2 ? @_ : {@_};
+    my $env  = $self->{env} = $p->{env};
 
     $self->{_read_position} = 0;
     $self->{_chunk_size}    = 4096;
@@ -25,19 +31,18 @@ sub init {
     $self->{_query_params}  = undef;
     $self->{_route_params}  = {};
 
+    # set attrs
+    $self->env($env);
+    $self->content_length($env->{CONTENT_LENGTH});
+    $self->input_handle($env->{'psgi.input'} || $env->{'PSGI.INPUT'});
+    $self->method($env->{REQUEST_METHOD});
+    $self->path($env->{PATH_INFO});
+    $self->uri($env->{REQUEST_URI});
+
     $self->_build_params;
 }
 
-sub env { shift->{env} }
-
-sub is_forward {0}
-
-sub method         { shift->env->{REQUEST_METHOD} }
-sub path           { shift->env->{PATH_INFO} || '/' }
-sub uri            { shift->env->{REQUEST_URI} }
-sub is_static      { shift->path =~ /\.[\w\d]+$/ }
-sub content_length { shift->env->{CONTENT_LENGTH} || 0 }
-sub input_handle   { $_[0]->env->{'psgi.input'} || $_[0]->env->{'PSGI.INPUT'} }
+sub is_static { shift->path =~ /\.[\w\d]+$/ }
 
 sub param {
     my ($self, $param) = @_;

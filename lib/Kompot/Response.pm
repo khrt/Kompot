@@ -14,7 +14,6 @@ use base 'Kompot::Base';
 
 sub init {
     my $self = shift;
-
     my $p = @_ % 2 ? $_[0] : {@_};
 
     $self->status($p->{status})             if $p->{status};

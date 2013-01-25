@@ -13,32 +13,18 @@ use base 'Kompot::Base';
 use Kompot::Renderer;
 use Kompot::Session;
 
-sub init {
-    my $self = shift;
+__PACKAGE__->attr(req => undef);
+__PACKAGE__->attr(params => undef);
 
-    $self->{req} = shift;
+sub init {
+    my ($self, $req) = @_;
 
     # Init session
-    my $cookie_str = $self->{req}->cookie($self->app->conf->cookie_name);
+    my $cookie_str = $req->cookie($self->app->conf->cookie_name);
     $self->session(Kompot::Session->new($cookie_str)->params);
 
-    return 1;
-}
-
-sub req { shift->{req} }
-
-# TODO Move to Renderer?
-sub add_helper {
-    my ($self, $name, $cb) = @_;
-    $self->{helpers}{$name} = $cb;
-}
-
-# TODO Move to Renderer?
-sub helpers { shift->{helpers} }
-
-sub params {
-    my $self = shift;
-    return $self->req->params;
+    $self->req($req);
+    $self->params($req->params);
 }
 
 sub param {

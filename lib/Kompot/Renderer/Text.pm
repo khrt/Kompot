@@ -8,8 +8,6 @@ use v5.12;
 
 use base 'Kompot::Base';
 
-use Kompot::Response;
-
 sub render {
     my ($self, %p) = @_;
 
@@ -21,12 +19,7 @@ sub render {
         $text =~ s/<%\s?$ph\s?%>/$pp->{$ph}/g;
     }
 
-    return
-        Kompot::Response->new(
-            content_type => $pp->{'content-type'} || 'text/plain',
-            content      => $text,
-            status       => 200,
-        );
+    return $text;
 }
 
 1;

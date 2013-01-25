@@ -13,26 +13,23 @@ use Mojo::Template;
 
 use base 'Kompot::Base';
 
-use Kompot::Response;
+__PACKAGE__->attr(c => undef);
 
 sub init {
     my ($self, $c) = @_;
-    $self->{controller} = $c or return;
-    $self->register_default_helpers;
-    return 1;
-}
 
-sub c { shift->{controller} }
+    return if not $c;
+    $self->c($c);
+    $self->register_default_helpers;
+}
 
 sub register_default_helpers {
     my $self = shift;
     my $c = $self->c;
 
-    $c->add_helper(dummy => sub { 'DUMMY' });
-
     # from Mojolicious::Plugin::DefaultHelpers
     for my $name (qw(layout title)) {
-        $c->add_helper(
+        $self->app->renderer->add_helper(
             $name => sub {
                 my $self  = shift;
                 my $stash = $self->stash;
@@ -58,12 +55,7 @@ sub render {
         $out = $self->_process($tmpl) or return;
     }
 
-    return
-        Kompot::Response->new(
-            content_type => 'text/html', # TODO detect content type
-            content      => $out,
-            status       => 200,
-        );
+    return $out;
 }
 
 sub _template_path {
@@ -71,8 +63,7 @@ sub _template_path {
 
     return if not $name;
 
-    my $paths = $self->app->conf->renderer_paths;
-
+    my $paths = $self->app->renderer->paths;
     for my $path (@$paths) {
         my $file = catfile($path, split('/', $name));
         return $file if -r $file;
@@ -98,7 +89,7 @@ sub _process {
 
     my $c = $self->c;
     my $stash   = $c->stash;
-    my $helpers = $c->helpers;
+    my $helpers = $self->app->renderer->helpers;
 
     my $prepend = q/
 my $self = shift;
@@ -106,7 +97,7 @@ use Scalar::Util 'weaken';
 weaken $self;
 no strict 'refs';
 no warnings 'redefine';
-my $_H = $self->helpers;
+my $_H = $self->app->renderer->helpers;
 /;
 
     for my $name (keys %$helpers) {

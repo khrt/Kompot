@@ -12,11 +12,36 @@ use Carp;
 use base 'Kompot::Base';
 
 use Kompot::Renderer::JSON;
-use Kompot::Renderer::MojoTemplate;
 use Kompot::Renderer::Static;
 use Kompot::Renderer::Text;
-use Kompot::Renderer::Xslate;
 use Kompot::Response;
+
+__PACKAGE__->attr(content_type => undef); # XXX
+__PACKAGE__->attr(engine => 'Kompot::Renderer::MojoTemplate');
+__PACKAGE__->attr(helpers => {});
+
+sub init {
+    my $self = shift;
+
+    # def tmpl path
+    my $tpath = $self->app->conf->root . '/templates';
+    $self->paths([$tpath]);
+
+    $self->add_helper(dummy => sub { 'DUMMY' });
+}
+
+sub add_helper {
+    my ($self, $name, $cb) = @_;
+    $self->{helpers}{$name} = $cb;
+}
+
+sub paths {
+    my ($self, $path) = @_;
+    if ($path && ref($path)) {
+        push(@{ $self->{paths} }, @$path);
+    }
+    return $self->{paths};
+}
 
 sub dynamic {
     my ($self, $c, $p) = @_;
@@ -33,81 +58,93 @@ sub dynamic {
     my $template = delete($p->{template});
     my $text     = delete($p->{text});
 
-    my $r;
+    my $out;
 
     # JSON
     if (defined($json)) {
-        $r = Kompot::Renderer::JSON->new->render(json => $json);
+        $out = Kompot::Renderer::JSON->new->render(json => $json);
     }
     # Text
     elsif (defined($text)) {
-        $r = Kompot::Renderer::Text->new->render(text => $text, params => $p);
+        $out = Kompot::Renderer::Text->new->render(text => $text, params => $p);
     }
     elsif (defined($template)) {
-        my $renderer = $self->app->conf->renderer;
-        $r = $renderer->new($c)->render($template);
+        my $renderer = $self->engine;
+        if ($self->load_package($renderer)) {
+            $out = $renderer->new($c)->render($template);
+        }
     }
     else {
-        $r = $self->internal_error('No renderer');
+        return $self->internal_error('No renderer');
     }
 
     # in case of errors
-    if (not $r) {
+    if (not $out) {
         return $self->internal_error('render dynamic error');
     }
 
-    return $self->_render($r);
+    my $r =
+        Kompot::Response->new(
+            content_type     => 'text/html', # TODO detect content-type
+            content          => $out,
+            status           => 200,
+            'content-length' => length($out),
+            'x-powered-by'   => $self->app->name,
+        );
+
+    return $r;
 }
 
 sub static {
     my ($self, $path) = @_;
 
-    my $r = Kompot::Renderer::Static->new->render($path);
+    my $out = Kompot::Renderer::Static->new->render($path);
 
-    if (not $r) {
+    if (not $out) {
         croak 'file not found';
         return $self->not_found('file not found');
     }
 
-    return $self->_render($r);
+    my $r =
+        Kompot::Response->new(
+            content_type     => 'text/html', # TODO detect content-type
+            content          => $out,
+            status           => 200,
+            'content-length' => length($out),
+            'x-powered-by'   => $self->app->name,
+        );
+
+    return $r;
 }
 
+# TODO Move to Rendere::Exception
 sub not_found {
     my ($self, $error) = @_;
 
     my $r =
         Kompot::Response->new(
-            content_type => 'text/plain',
-            content      => $error,
-            status       => 404,
+            content_type     => 'text/plain',
+            content          => $error,
+            status           => 404,
+            'content-length' => length($error),
+            'x-powered-by'   => $self->app->name,
         );
 
-    return $self->_render($r);
+    return $r;
 }
 
+# TODO Move to Renderer::Exception
 sub internal_error {
     my ($self, $error) = @_;
 
     my $r =
         Kompot::Response->new(
-            content_type => 'text/plain',
-            content      => $error,
-            status       => 500,
+            content_type     => 'text/plain',
+            content          => $error,
+            status           => 500,
+            'content-length' => length($error),
+            'x-powered-by'   => $self->app->name,
         );
-
-    return $self->_render($r);
-}
-
-
-sub _render {
-    my ($self, $r) = @_;
-
-    $r->header(
-        'content-length' => length($r->content),
-        'x-powered-by'   => $self->app->name,
-    );
-
-    $r->status(200) if !$r->status;
 
     return $r;
 }

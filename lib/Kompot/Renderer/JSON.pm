@@ -10,18 +10,9 @@ use JSON::XS;
 
 use base 'Kompot::Base';
 
-use Kompot::Response;
-
 sub render {
     my ($self, %p) = @_;
-
-    my $json = encode_json($p{json}) or return;
-    return
-        Kompot::Response->new(
-            content_type => 'application/json',
-            content      => $json,
-            status       => 200,
-        );
+    return encode_json($p{json});
 }
 
 1;

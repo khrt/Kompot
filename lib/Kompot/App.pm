@@ -17,11 +17,12 @@ use Kompot::Renderer;
 use Kompot::Routes;
 use Kompot::Session;
 
-sub name { 'Kompot' . $Kompot::VERSION }
+__PACKAGE__->attr(name => 'Kompot');
+__PACKAGE__->attr(secret => undef);
 
-sub secret {
-    my ($self, $secret) = @_;
-    return $self->conf->secret($secret);
+sub init { 
+    my $self = shift;
+    $self->name('Kompot_' . $Kompot::VERSION);
 }
 
 sub request { 
@@ -39,15 +40,14 @@ sub route  { goto &routes }
 
 sub conf { state $conf ||= Kompot::Config->new }
 
-
 #
 # Main function
+#
 sub run {
     my $self = shift;
 
     if (not $self->secret) {
-        carp 'no secret';
-        return;
+        croak 'Define `secret` before start application!';
     }
 
     my $handler = Kompot::Handler->new;

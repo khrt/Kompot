@@ -8,36 +8,38 @@ use v5.12;
 
 use autodie qw(open close);
 
-use DDP;
 use Carp;
-use File::stat;
+use DDP;
 use Digest::SHA qw(sha1_hex);
+use File::stat;
+use POSIX qw(strftime);
 
 use base 'Kompot::Base';
 
 use Kompot::Response;
 
+__PACKAGE__->attr(cache_ttl => 0);
+__PACKAGE__->attr(has_params => undef);
+__PACKAGE__->attr(path => undef);
+__PACKAGE__->attr(code => undef);
+
 sub init {
     my $self = shift;
-
     my $p = @_ % 2 ? $_[0] : {@_};
 
-    croak 'Not enough parameters for add route'
-        if (!$p->{method} || !$p->{path} || !$p->{code});
+    if (!$p->{method} || !$p->{path} || !$p->{code}) {
+        croak 'Not enough parameters for add route';
+    }
 
     map { $self->{$_} = $p->{$_} } keys(%$p);
 
     $self->_path_keys;
-    $self->{cache_ttl} = $self->app->conf->cache_ttl || 0;
+    $self->cache_ttl($self->app->conf->cache_ttl);
 
     return 1;
 }
 
-sub cache_ttl  { shift->{cache_ttl} }
-sub has_params { shift->{has_params} }
 sub method { uc(shift->{method}) }
-sub path   { shift->{path} }
-sub code   { shift->{code} }
 
 sub path_re {
     my $self = shift;
@@ -114,6 +116,7 @@ sub _cache_filename {
 
 sub cached {
     my $self = shift;
+    return if not $self->cache_ttl;
 
     my $file = $self->_cache_filename;
     # file not exists
@@ -161,7 +164,7 @@ sub cache {
             content      => \@data,
         );
 
-    say 'return from cache: ' . $self->path;
+    say strftime('%H:%M:%S', localtime) . ' from cache ' . $self->path;
 
     return $res;
 }

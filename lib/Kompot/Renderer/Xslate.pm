@@ -6,37 +6,36 @@ use warnings;
 use utf8;
 use v5.12;
 
+use Carp;
 use Text::Xslate;
 
 use base 'Kompot::Base';
 
 use Kompot::Response;
 
+__PACKAGE__->attr(c => undef);
+
 sub init {
     my ($self, $c) = @_;
-    $self->{controller} = $c or return;
+
+    return if not $c;
+    $self->c($c);
     $self->register_default_helpers;
-    return 1;
 }
 
-sub c { shift->{controller} }
-
-sub register_default_helpers {
-    my $self = shift;
-    my $c = $self->c;
-    $c->add_helper(dummy => sub { 'DUMMY' });
-}
+sub register_default_helpers {}
 
 sub render {
     my ($self, $name, %options) = @_;
 
     my $c = $self->c;
+    my $r = $self->app->renderer;
 
     my $xslate =
         Text::Xslate->new({
 #            cache_dir => $cache_dir, # TODO
-            path      => $self->app->conf->renderer_paths,
-            function  => $c->helpers,
+            path      => $r->paths,
+            function  => $r->helpers,
             %options,
         });
 
@@ -47,14 +46,8 @@ sub render {
         $out = '';
     }
 
-    return
-        Kompot::Response->new(
-            content_type => 'text/html', # TODO detect content type
-            content      => $out,
-            status       => 200,
-        );
+    return $out;
 }
-
 
 1;
 
