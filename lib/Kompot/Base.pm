@@ -8,22 +8,18 @@ use v5.12;
 
 use Carp;
 
-#sub import {
-#    my $class = shift;
-#
-#    no strict 'refs';
-#    my $caller = caller;
-#    *{"${caller}::attr"} = sub { attr($caller, @_) };
-#}
-#
-#sub attr {
-#    my ($class, $name, $default) = @_;
-#    sub {
-#        my ($self, $value) = @_;
-#        $self->{$name} = $value if $value;
-#        return $self->{$name} || $default;
-#    };
-#}
+sub attr {
+    my ($class, $name, $default) = @_;
+
+    no strict 'refs';
+    my $caller = caller;
+
+    *{"${caller}::$name"} = sub {
+        my ($self, $value) = @_;
+        $self->{$name} = $value if $value;
+        return $self->{$name} || $default || undef;
+    };
+}
 
 sub new {
     my $class = shift;
