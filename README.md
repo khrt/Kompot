@@ -8,7 +8,7 @@ use Kompot;
 
 get '/' => sub {
   my $self = shift;
-  my $name = $self->param('p');
+  my $name = $self->param('name');
   $self->render(text => "Hello, $name!");
 }
 ````
