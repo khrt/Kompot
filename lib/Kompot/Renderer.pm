@@ -10,13 +10,11 @@ use DDP { output => 'stdout' };
 use Carp;
 
 use base 'Kompot::Base';
-
+use Kompot::Attributes;
 use Kompot::Renderer::JSON;
 use Kompot::Renderer::Static;
 use Kompot::Renderer::Text;
 use Kompot::Response;
-
-__PACKAGE__->import;
 
 has 'default_content_type' => 'text/html';
 has 'engine' => 'Kompot::Renderer::MojoTemplate';

@@ -10,16 +10,14 @@ use Carp;
 use DDP { output => 'stdout' };
 
 use base 'Kompot::Base';
-
+use Kompot::Attributes;
 use Kompot::Config;
 use Kompot::Handler;
 use Kompot::Renderer;
 use Kompot::Routes;
 use Kompot::Session;
 
-__PACKAGE__->import;
-
-has name => 'Kompot';
+has 'name' => 'Kompot';
 has 'secret';
 
 sub init { 

@@ -13,10 +13,9 @@ use JSON::XS;
 use MIME::Base64;
 
 use base 'Kompot::Base';
-
+use Kompot::Attributes;
 use Kompot::Cookie;
 
-__PACKAGE__->import;
 has cookie => '';
 
 sub init {

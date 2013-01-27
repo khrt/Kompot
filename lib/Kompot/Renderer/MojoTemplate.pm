@@ -12,8 +12,7 @@ use File::Spec::Functions 'catfile';
 use Mojo::Template;
 
 use base 'Kompot::Base';
-
-__PACKAGE__->import;
+use Kompot::Attributes;
 
 has 'c';
 

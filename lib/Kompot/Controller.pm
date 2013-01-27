@@ -9,11 +9,9 @@ use v5.12;
 use DDP { output => 'stdout' };
 
 use base 'Kompot::Base';
-
+use Kompot::Attributes;
 use Kompot::Renderer;
 use Kompot::Session;
-
-__PACKAGE__->import;
 
 has 'req';
 has 'params';

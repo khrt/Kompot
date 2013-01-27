@@ -10,7 +10,6 @@ use Carp;
 use DDP { output => 'stdout' };
 
 use base 'Kompot::Base';
-
 use Kompot::Request;
 use Kompot::Routes::Route;
 use Kompot::Controller;

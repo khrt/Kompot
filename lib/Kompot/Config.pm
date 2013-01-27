@@ -6,23 +6,21 @@ use warnings;
 use utf8;
 use v5.12;
 
-use Carp;
 use FindBin qw($Bin);
 
 use base 'Kompot::Base';
-
-__PACKAGE__->import;
+use Kompot::Attributes;
 
 # Path
-has(root => $Bin);
-has(static => "$Bin/static");
+has 'root' => $Bin;
+has 'static' => "$Bin/static";
 
 # Cache
-has(cache_ttl => 0);
+has 'cache_ttl' => 0;
 
 # Cookie
-has(cookie_name => 'kompot');
-has(cookie_expires => 60*60); # one hour
+has 'cookie_name' => 'kompot';
+has 'cookie_expires' => 60*60; # one hour
 
 1;
 

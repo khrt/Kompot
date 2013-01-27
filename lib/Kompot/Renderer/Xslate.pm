@@ -10,8 +10,7 @@ use Carp;
 use Text::Xslate;
 
 use base 'Kompot::Base';
-
-__PACKAGE__->import;
+use Kompot::Attributes;
 
 has 'c';
 
