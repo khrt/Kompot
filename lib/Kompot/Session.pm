@@ -13,10 +13,10 @@ use JSON::XS;
 use MIME::Base64;
 
 use base 'Kompot::Base';
-
+use Kompot::Attributes;
 use Kompot::Cookie;
 
-__PACKAGE__->attr(cookie => '');
+has cookie => '';
 
 sub init {
     my ($self, $cookie_str) = @_;

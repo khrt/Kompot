@@ -12,8 +12,9 @@ use File::Spec::Functions 'catfile';
 use Mojo::Template;
 
 use base 'Kompot::Base';
+use Kompot::Attributes;
 
-__PACKAGE__->attr(c => undef);
+has 'c';
 
 sub init {
     my ($self, $c) = @_;

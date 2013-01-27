@@ -11,9 +11,10 @@ use Carp;
 use URI::Escape;
 
 use base 'Kompot::Base';
+use Kompot::Attributes;
 
-__PACKAGE__->attr(name  => undef);
-__PACKAGE__->attr(value => undef);
+has 'name';
+has 'value';
 
 sub init {
     my $self = shift;

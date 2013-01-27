@@ -9,13 +9,13 @@ use v5.12;
 use DDP { output => 'stdout' };
 
 use base 'Kompot::Base';
-
+use Kompot::Attributes;
 use Kompot::Renderer;
 use Kompot::Session;
 use Kompot::Response;
 
-__PACKAGE__->attr(req => undef);
-__PACKAGE__->attr(params => undef);
+has 'req';
+has 'params';
 
 sub init {
     my ($self, $req) = @_;

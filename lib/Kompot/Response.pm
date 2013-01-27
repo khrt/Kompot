@@ -11,6 +11,10 @@ use DDP { output => 'stdout' };
 use Carp;
 
 use base 'Kompot::Base';
+use Kompot::Attributes;
+
+has 'status';
+has 'header' => sub { shift->headers(@_) };
 
 sub init {
     my $self = shift;
@@ -28,11 +32,12 @@ sub location {
     return $self->{location};
 }
 
-sub status {
-    my ($self, $status) = @_;
-    $self->{status} = $status if $status;
-    return $self->{status};
-}
+#sub status {
+#    my ($self, $status) = @_;
+#    $self->{status} = $status if $status;
+#    return $self->{status};
+#}
+#sub header { shift->headers(@_) }
 
 sub content_type {
     my ($self, $ctype) = @_;
@@ -40,7 +45,6 @@ sub content_type {
     return $self->headers('content-type');
 }
 
-sub header { shift->headers(@_) }
 
 sub headers {
     my $self = shift;

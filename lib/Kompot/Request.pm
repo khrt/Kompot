@@ -11,14 +11,16 @@ use Carp;
 use URI::Escape;
 
 use base 'Kompot::Base';
+use Kompot::Attributes;
 
-__PACKAGE__->attr(env            => {});
-__PACKAGE__->attr(content_length => 0);
-__PACKAGE__->attr(input_handle   => undef);
-__PACKAGE__->attr(is_forward     => 0);
-__PACKAGE__->attr(method         => undef);
-__PACKAGE__->attr(path           => '/');
-__PACKAGE__->attr(uri            => undef);
+has env    => {};
+has content_length => 0;
+has input_handle   => undef;
+has is_forward     => 0;
+has is_static => sub { shift->path =~ /\.[\w\d]+$/ };
+has method    => undef;
+has path      => '/';
+has uri       => undef;
 
 sub init {
     my $self = shift;
@@ -41,8 +43,6 @@ sub init {
 
     $self->_build_params;
 }
-
-sub is_static { shift->path =~ /\.[\w\d]+$/ }
 
 sub param {
     my ($self, $param) = @_;

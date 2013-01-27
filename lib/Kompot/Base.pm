@@ -20,19 +20,6 @@ sub new {
 # default initializer
 sub init {1}
 
-sub attr {
-    my ($class, $name, $default) = @_;
-
-    no strict 'refs';
-    my $caller = caller;
-
-    *{"${caller}::$name"} = sub {
-        my ($self, $value) = @_;
-        $self->{$name} = $value if $value;
-        return $self->{$name} // $default;
-    };
-}
-
 sub load_package {
     my ($self, $package) = @_;
 

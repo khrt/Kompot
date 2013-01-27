@@ -10,15 +10,15 @@ use Carp;
 use DDP { output => 'stdout' };
 
 use base 'Kompot::Base';
-
+use Kompot::Attributes;
 use Kompot::Config;
 use Kompot::Handler;
 use Kompot::Renderer;
 use Kompot::Routes;
 use Kompot::Session;
 
-__PACKAGE__->attr(name => 'Kompot');
-__PACKAGE__->attr(secret => undef);
+has 'name' => 'Kompot';
+has 'secret';
 
 sub init { 
     my $self = shift;
