@@ -12,11 +12,7 @@ use Text::Xslate;
 use base 'Kompot::Base';
 use Kompot::Attributes;
 
-<<<<<<< HEAD
-__PACKAGE__->attr(c => undef);
-=======
 has 'c';
->>>>>>> attrs
 
 sub init {
     my ($self, $c) = @_;
