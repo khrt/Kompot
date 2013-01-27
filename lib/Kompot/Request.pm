@@ -26,6 +26,7 @@ sub init {
     my $self = shift;
     my $p    = @_ % 2 ? @_ : {@_};
     my $env  = $self->{env} = $p->{env};
+p $env;
 
     $self->{_read_position} = 0;
     $self->{_chunk_size}    = 4096;

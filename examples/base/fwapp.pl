@@ -142,6 +142,16 @@ get '/redirect' => sub {
     $self->redirect_to('/');
 };
 
+get '/upload' => sub {
+    my $self = shift;
+    $self->render(template => 'upload.ep');
+};
+
+post '/upload' => sub {
+    my $self = shift;
+
+};
+
 app->secret('verysecret');
 app->start;
 

@@ -25,11 +25,16 @@ sub add {
     $methods = [$methods] if not ref($methods);
 
     foreach my $method (@$methods) {
+        if ($self->{_routes_list}{$method}{$path}) {
+            carp "Route `$path` redefined!";
+        }
+
         my $route =
             Kompot::Routes::Route->new(
                 { method => $method, path => $path, code => $code, }
             );
         push(@{ $self->{routes} }, $route);
+        $self->{_routes_list}{$method}{$path} = 1;
     }
 }
 
