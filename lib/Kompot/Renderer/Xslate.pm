@@ -11,8 +11,6 @@ use Text::Xslate;
 
 use base 'Kompot::Base';
 
-use Kompot::Response;
-
 __PACKAGE__->attr(c => undef);
 
 sub init {
