@@ -8,10 +8,8 @@ use v5.12;
 
 sub import {
     my $caller = caller;
-#say "-- [$caller] can has? " . ($caller->can('has') ? 'yes' : 'no');
     if (not $caller->can('has')) {
         no strict 'refs';
-say "--> import has to $caller";
         *{"${caller}::has"} = sub { _attr($caller, @_) };
     }
 }
