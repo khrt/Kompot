@@ -12,6 +12,7 @@ use base 'Kompot::Base';
 
 use Kompot::Renderer;
 use Kompot::Session;
+use Kompot::Response;
 
 __PACKAGE__->attr(req => undef);
 __PACKAGE__->attr(params => undef);
@@ -60,6 +61,19 @@ sub session {
     map { $session->{$_} = $v->{$_} } keys %$v;
 
     return $self;
+}
+
+sub redirect_to {
+    my ($self, $url) = @_;
+
+    my $r =
+        Kompot::Response->new(
+            status   => 302,
+            location => $url,
+            content  => [],
+        );
+
+    return $r;
 }
 
 sub render {

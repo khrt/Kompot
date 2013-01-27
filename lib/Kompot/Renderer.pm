@@ -49,8 +49,6 @@ sub dynamic {
     $p ||= {};
 
     my $stash = $c->stash;
-#p $p;
-#p $stash;
 
     map { $p->{$_} = $stash->{$_} } keys(%$stash);
 

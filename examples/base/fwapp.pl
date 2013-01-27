@@ -137,6 +137,11 @@ get '/render/xslate' => sub {
     $self->render(template => 'xslate.tx');
 };
 
+get '/redirect' => sub {
+    my $self = shift;
+    $self->redirect_to('/');
+};
+
 app->secret('verysecret');
 app->start;
 

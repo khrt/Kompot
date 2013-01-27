@@ -19,6 +19,13 @@ sub init {
     $self->status($p->{status})             if $p->{status};
     $self->content_type($p->{content_type}) if $p->{content_type};
     $self->content($p->{content})           if $p->{content};
+    $self->location($p->{location})         if $p->{location};
+}
+
+sub location {
+    my ($self, $location) = @_;
+    $self->headers(location => $location) if $location;
+    return $self->{location};
 }
 
 sub status {
