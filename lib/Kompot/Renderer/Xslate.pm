@@ -11,9 +11,9 @@ use Text::Xslate;
 
 use base 'Kompot::Base';
 
-use Kompot::Response;
+__PACKAGE__->import;
 
-__PACKAGE__->attr(c => undef);
+has 'c';
 
 sub init {
     my ($self, $c) = @_;

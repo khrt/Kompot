@@ -16,7 +16,8 @@ use base 'Kompot::Base';
 
 use Kompot::Cookie;
 
-__PACKAGE__->attr(cookie => '');
+__PACKAGE__->import;
+has cookie => '';
 
 sub init {
     my ($self, $cookie_str) = @_;

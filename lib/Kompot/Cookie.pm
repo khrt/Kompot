@@ -12,8 +12,10 @@ use URI::Escape;
 
 use base 'Kompot::Base';
 
-__PACKAGE__->attr(name  => undef);
-__PACKAGE__->attr(value => undef);
+__PACKAGE__->import;
+
+has('name');
+has('value');
 
 sub init {
     my $self = shift;

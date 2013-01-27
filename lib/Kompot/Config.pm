@@ -11,16 +11,18 @@ use FindBin qw($Bin);
 
 use base 'Kompot::Base';
 
+__PACKAGE__->import;
+
 # Path
-__PACKAGE__->attr(root => $Bin);
-__PACKAGE__->attr(static => "$Bin/static");
+has(root => $Bin);
+has(static => "$Bin/static");
 
 # Cache
-__PACKAGE__->attr(cache_ttl => 0);
+has(cache_ttl => 0);
 
 # Cookie
-__PACKAGE__->attr(cookie_name => 'kompot');
-__PACKAGE__->attr(cookie_expires => 60*60); # one hour
+has(cookie_name => 'kompot');
+has(cookie_expires => 60*60); # one hour
 
 1;
 

@@ -17,8 +17,10 @@ use Kompot::Renderer;
 use Kompot::Routes;
 use Kompot::Session;
 
-__PACKAGE__->attr(name => 'Kompot');
-__PACKAGE__->attr(secret => undef);
+__PACKAGE__->import;
+
+has name => 'Kompot';
+has 'secret';
 
 sub init { 
     my $self = shift;

@@ -12,13 +12,17 @@ use URI::Escape;
 
 use base 'Kompot::Base';
 
-__PACKAGE__->attr(env            => {});
-__PACKAGE__->attr(content_length => 0);
-__PACKAGE__->attr(input_handle   => undef);
-__PACKAGE__->attr(is_forward     => 0);
-__PACKAGE__->attr(method         => undef);
-__PACKAGE__->attr(path           => '/');
-__PACKAGE__->attr(uri            => undef);
+use Kompot::Dummy;
+
+__PACKAGE__->import;
+
+has(env            => {});
+has(content_length => 0);
+has(input_handle   => undef);
+has(is_forward     => 0);
+has(method         => undef);
+has(path           => '/');
+has uri => undef;
 
 sub init {
     my $self = shift;

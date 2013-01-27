@@ -8,6 +8,16 @@ use v5.12;
 
 use Carp;
 
+sub import {
+    my $caller = caller;
+#say "-- [$caller] can has? " . ($caller->can('has') ? 'yes' : 'no');
+    if (not $caller->can('has')) {
+        no strict 'refs';
+say "--> import has to $caller";
+        *{"${caller}::has"} = sub { _attr($caller, @_) };
+    }
+}
+
 sub new {
     my $class = shift;
 
@@ -20,17 +30,23 @@ sub new {
 # default initializer
 sub init {1}
 
-sub attr {
+sub _attr {
     my ($class, $name, $default) = @_;
 
     no strict 'refs';
-    my $caller = caller;
+    my $attr;
+    if (ref $default eq 'CODE') {
+        $attr = $default;
+    }
+    else {
+        $attr = sub {
+            my ($self, $value) = @_;
+            $self->{$name} = $value if $value;
+            return $self->{$name} // $default;
+        };
+    }
 
-    *{"${caller}::$name"} = sub {
-        my ($self, $value) = @_;
-        $self->{$name} = $value if $value;
-        return $self->{$name} // $default;
-    };
+    *{"${class}::$name"} = $attr;
 }
 
 sub load_package {

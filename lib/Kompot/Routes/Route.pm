@@ -18,10 +18,12 @@ use base 'Kompot::Base';
 
 use Kompot::Response;
 
-__PACKAGE__->attr(cache_ttl => 0);
-__PACKAGE__->attr(has_params => undef);
-__PACKAGE__->attr(path => undef);
-__PACKAGE__->attr(code => undef);
+__PACKAGE__->import;
+
+has cache_ttl => 0;
+has 'has_params';
+has 'path';
+has 'code';
 
 sub init {
     my $self = shift;

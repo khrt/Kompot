@@ -13,8 +13,10 @@ use base 'Kompot::Base';
 use Kompot::Renderer;
 use Kompot::Session;
 
-__PACKAGE__->attr(req => undef);
-__PACKAGE__->attr(params => undef);
+__PACKAGE__->import;
+
+has 'req';
+has 'params';
 
 sub init {
     my ($self, $req) = @_;

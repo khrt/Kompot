@@ -13,7 +13,9 @@ use Mojo::Template;
 
 use base 'Kompot::Base';
 
-__PACKAGE__->attr(c => undef);
+__PACKAGE__->import;
+
+has 'c';
 
 sub init {
     my ($self, $c) = @_;

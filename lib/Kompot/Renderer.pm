@@ -16,9 +16,11 @@ use Kompot::Renderer::Static;
 use Kompot::Renderer::Text;
 use Kompot::Response;
 
-__PACKAGE__->attr(content_type => undef); # XXX
-__PACKAGE__->attr(engine => 'Kompot::Renderer::MojoTemplate');
-__PACKAGE__->attr(helpers => {});
+__PACKAGE__->import;
+
+has 'default_content_type' => 'text/html';
+has 'engine' => 'Kompot::Renderer::MojoTemplate';
+has 'helpers' => {};
 
 sub init {
     my $self = shift;
@@ -49,20 +51,20 @@ sub dynamic {
     $p ||= {};
 
     my $stash = $c->stash;
-#p $p;
-#p $stash;
 
     map { $p->{$_} = $stash->{$_} } keys(%$stash);
 
     my $json     = delete($p->{json});
     my $template = delete($p->{template});
     my $text     = delete($p->{text});
+    my $ctype    = $p->{content_type} || $self->default_content_type;
 
     my $out;
 
     # JSON
     if (defined($json)) {
         $out = Kompot::Renderer::JSON->new->render(json => $json);
+        $ctype = 'text/json';
     }
     # Text
     elsif (defined($text)) {
