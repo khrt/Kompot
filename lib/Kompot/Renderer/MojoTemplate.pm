@@ -26,7 +26,6 @@ sub init {
 
 sub register_default_helpers {
     my $self = shift;
-    my $c = $self->c;
 
     # from Mojolicious::Plugin::DefaultHelpers
     for my $name (qw(layout title)) {
