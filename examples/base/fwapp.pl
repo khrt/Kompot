@@ -19,7 +19,7 @@ get '/' => sub {
         from => 'Kompot',
     );
     
-    $self->render(text => 'Hello, <% to %>! From `<% from %>`.');
+    $self->render(text => 'Hello, <% to %>! <% from %>.');
 };
 
 get '/json' => sub {
