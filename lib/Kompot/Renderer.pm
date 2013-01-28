@@ -55,14 +55,14 @@ sub dynamic {
     my $json     = delete($p->{json});
     my $template = delete($p->{template});
     my $text     = delete($p->{text});
-    my $ctype    = $p->{content_type} || $self->default_content_type;
+    my $type     = $p->{content_type} || $self->default_content_type;
 
     my $out;
 
     # JSON
     if (defined($json)) {
         $out = Kompot::Renderer::JSON->new->render(json => $json);
-        $ctype = 'text/json';
+        $type = 'text/json';
     }
     # Text
     elsif (defined($text)) {
@@ -85,11 +85,10 @@ sub dynamic {
 
     my $r =
         Kompot::Response->new(
-            content_type     => 'text/html', # TODO detect content-type
-            content          => $out,
-            status           => 200,
-            'content-length' => length($out),
-            'x-powered-by'   => $self->app->name,
+            status         => 200,
+            content_type   => $type,
+            content_length => length($out),
+            content        => $out,
         );
 
     return $r;
@@ -110,8 +109,7 @@ sub static {
             content_type     => 'text/html', # TODO detect content-type
             content          => $out,
             status           => 200,
-            'content-length' => length($out),
-            'x-powered-by'   => $self->app->name,
+            content_length   => length($out),
         );
 
     return $r;
@@ -121,13 +119,27 @@ sub static {
 sub not_found {
     my ($self, $error) = @_;
 
+    if (!$error) {
+        my $req = $self->app->request;
+        my @routes = $self->app->route->routes;
+        my $routes;
+
+        foreach (@routes) {
+            $routes .= $_->{method} . "\t=> " . $_->{path} . "\n";
+        }
+
+        $error = <<MSG_END;
+No route to `${ \$req->path }` via ${ \uc($req->method) }.
+Available routes:\n$routes
+MSG_END
+    }
+
     my $r =
         Kompot::Response->new(
             content_type     => 'text/plain',
             content          => $error,
             status           => 404,
-            'content-length' => length($error),
-            'x-powered-by'   => $self->app->name,
+            content_length   => length($error),
         );
 
     return $r;
@@ -156,4 +168,52 @@ sub _is_text {
 
 1;
 
-__END__
+__DATA__
+
+@@ not_found.html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Not Found</title>
+</head>
+<body>
+<h1>Not found</h1>
+<p>Requested URI not found.</p>
+</body>
+</html>
+
+@@ not_found.dev.html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Not Found DEV</title>
+</head>
+<body>
+<h1>Not found</h1>
+<p>Requested URI not found DEV.</p>
+</body>
+</html>
+
+@@ exception.html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Exception</title>
+</head>
+<body>
+<h1>Exception</h1>
+<p>An error was happened.</p>
+</body>
+</html>
+
+@@ exception.dev.html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Exception DEV</title>
+</head>
+<body>
+<h1>Exception</h1>
+<p>An error was happened DEV.</p>
+</body>
+</html>
