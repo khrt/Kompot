@@ -13,7 +13,7 @@ use URI::Escape;
 use base 'Kompot::Base';
 use Kompot::Attributes;
 
-has env    => {};
+has env => {};
 has content_length => 0;
 has input_handle   => undef;
 has is_forward     => 0;
@@ -26,7 +26,6 @@ sub init {
     my $self = shift;
     my $p    = @_ % 2 ? @_ : {@_};
     my $env  = $self->{env} = $p->{env};
-p $env;
 
     $self->{_read_position} = 0;
     $self->{_chunk_size}    = 4096;
@@ -125,20 +124,18 @@ sub _parse_query_params {
 
 sub _parse_body_params {
     my $self = shift;
-
     return $self->{_body_params} if defined $self->{_body_params};
 
     my $content_length = $self->content_length;
-
     return if not $self->input_handle;
 
     my $body;
-
     if ($content_length > 0) {
         while (my $buffer = $self->_read) {
             $body .= $buffer;
         }
     }
+p $body;
 
     $self->{_body_params} = $self->_parse_params($body) || {};
     return $self->{_body_params};
@@ -175,6 +172,7 @@ sub _parse_params {
             $pp->{$key} = $val;
         }
     }
+p $pp;
 
     return $pp;
 }

@@ -150,6 +150,11 @@ get '/upload' => sub {
 post '/upload' => sub {
     my $self = shift;
 
+    my $file = $self->param('file');
+    my $name = $file->name;
+    my $size = $file->size;
+
+    $self->render(text => "File: $name [$size]");
 };
 
 app->secret('verysecret');
