@@ -16,9 +16,9 @@ use Kompot::Renderer::Static;
 use Kompot::Renderer::Text;
 use Kompot::Response;
 
-has 'default_content_type' => 'text/html';
-has 'engine' => 'Kompot::Renderer::MojoTemplate';
-has 'helpers' => {};
+has default_content_type => 'text/html';
+has engine  => 'Kompot::Renderer::MojoTemplate';
+has helpers => {};
 
 sub init {
     my $self = shift;
