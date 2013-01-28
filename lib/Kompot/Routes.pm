@@ -75,19 +75,7 @@ sub dispatch {
 
     # 404
     if (not $res) {
-        my @routes = $self->routes;
-        my $routes;
-
-        foreach (@routes) {
-            $routes .= $_->{method} . "\t=> " . $_->{path} . "\n";
-        }
-
-        my $errmsg = <<MSG_END;
-No route to `${ \$req->path }` via ${ \uc($req->method) }.
-Available routes:\n$routes
-MSG_END
-
-        $res = $self->app->render->not_found($errmsg);
+        $res = $self->app->render->not_found;
     }
 
     return $res;
