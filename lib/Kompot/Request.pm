@@ -135,7 +135,6 @@ sub _parse_body_params {
             $body .= $buffer;
         }
     }
-p $body;
 
     $self->{_body_params} = $self->_parse_params($body) || {};
     return $self->{_body_params};
@@ -172,7 +171,6 @@ sub _parse_params {
             $pp->{$key} = $val;
         }
     }
-p $pp;
 
     return $pp;
 }
