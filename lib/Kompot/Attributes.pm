@@ -17,7 +17,6 @@ sub import {
 sub _attr {
     my ($class, $name, $default) = @_;
 
-    no strict 'refs';
     my $attr;
     if (ref $default eq 'CODE') {
         $attr = $default;
@@ -30,6 +29,7 @@ sub _attr {
         };
     }
 
+    no strict 'refs';
     *{"${class}::$name"} = $attr;
 }
 
