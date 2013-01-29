@@ -13,7 +13,6 @@ use base 'Kompot::Base';
 use Kompot::Attributes;
 use Kompot::Renderer::JSON;
 use Kompot::Renderer::Static;
-use Kompot::Renderer::Text;
 use Kompot::Response;
 
 has default_content_type => 'text/html';
@@ -66,7 +65,8 @@ sub dynamic {
     }
     # Text
     elsif (defined($text)) {
-        $out = Kompot::Renderer::Text->new->render(text => $text, params => $p);
+        $out = $text;
+        $type = $p->{content_type} || 'text/plain';
     }
     elsif (defined($template)) {
         my $renderer = $self->engine;
@@ -142,6 +142,10 @@ MSG_END
             content_length   => length($error),
         );
 
+p $self->read_data($self->app->main);
+say $self->read_data($self->app->main, 'index.html.ep');
+say $self->read_data(ref $self, 'not_found.html');
+
     return $r;
 }
 
@@ -177,20 +181,14 @@ __DATA__
 <title>Not Found</title>
 </head>
 <body>
-<h1>Not found</h1>
+<h1>Page not found</h1>
 <p>Requested URI not found.</p>
-</body>
-</html>
-
-@@ not_found.dev.html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Not Found DEV</title>
-</head>
-<body>
-<h1>Not found</h1>
-<p>Requested URI not found DEV.</p>
+<% if ($dev_mode) {
+  foreach my $r (@routes) {
+    print $r->method;
+    print $r->path;
+  }
+} %>
 </body>
 </html>
 

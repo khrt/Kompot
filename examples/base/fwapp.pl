@@ -13,13 +13,7 @@ use Kompot;
 
 get '/' => sub {
     my $self = shift;
-
-    $self->stash(
-        to   => 'World',
-        from => 'Kompot',
-    );
-    
-    $self->render(text => 'Hello, <% to %>! <% from %>.');
+    $self->render(text => 'Hello, World!');
 };
 
 get '/json' => sub {
@@ -46,7 +40,8 @@ to post<br>
 </form>
 EOF
 
-    $self->render(text => $form, 'content-type' => 'text/html');
+    $self->stash(content_type => 'text/html');
+    $self->render(text => $form);
 };
 
 post '/post' => sub {
@@ -58,14 +53,6 @@ post '/post' => sub {
     $self->render(text => "Hello, $name! ($se)");
 };
 
-get '/regex/:route{\d\w+}' => sub {
-    my $self = shift;
-
-    my $route = $self->param('route');
-
-    $self->render(text => "route: $route");
-};
-
 get '/regex/:a{\d\w+}/:b{\w+}' => sub {
     my $self = shift;
 
@@ -75,21 +62,13 @@ get '/regex/:a{\d\w+}/:b{\w+}' => sub {
     $self->render(text => "a: $a; b: $b");
 };
 
-get '/route/:pp' => sub {
-    my $self = shift;
-
-    my $pp = $self->param('pp');
-
-    $self->render(text => "1 param. The param is $pp!");
-};
-
 get '/route/:p/:pp' => sub {
     my $self = shift;
 
     my $p = $self->param('p');
     my $pp = $self->param('pp');
 
-    $self->render(text => "2 param. The params is $p, $pp!");
+    $self->render(text => "The first is $p, the second is $pp.");
 };
 
 get '/session/set' => sub {
