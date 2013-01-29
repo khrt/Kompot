@@ -16,7 +16,7 @@ my @HEADERS = qw(
     status location content_type content_length content x_powered_by
 );
 
-sub _req_attr {
+sub _res_attr {
     my $h = shift;
     return sub {
         my ($self, $v) = @_;
@@ -27,11 +27,11 @@ sub _req_attr {
 
 has 'header' => sub { shift->headers(@_) };
 has 'status';
-has 'content_type'   => _req_attr('Content-Type',   @_);
-has 'content_length' => _req_attr('Content-Length', @_);
-has 'x_powered_by'   => _req_attr('X-Powered-By',   @_);
-has 'set_cookie'     => _req_attr('Set-Cookie',     @_);
-has 'location'       => _req_attr('Location',       @_);
+has 'content_type'   => _res_attr('Content-Type',   @_);
+has 'content_length' => _res_attr('Content-Length', @_);
+has 'x_powered_by'   => _res_attr('X-Powered-By',   @_);
+has 'set_cookie'     => _res_attr('Set-Cookie',     @_);
+has 'location'       => _res_attr('Location',       @_);
 
 sub init {
     my $self = shift;
