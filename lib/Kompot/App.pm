@@ -17,6 +17,7 @@ use Kompot::Renderer;
 use Kompot::Routes;
 use Kompot::Session;
 
+has 'main';
 has 'name' => 'Kompot';
 has 'secret';
 
@@ -45,6 +46,10 @@ sub conf { state $conf ||= Kompot::Config->new }
 #
 sub run {
     my $self = shift;
+
+    if (not $self->main) {
+        croak 'Can not detect `main` class!';
+    }
 
     if (not $self->secret) {
         croak 'Define `secret` before start application!';

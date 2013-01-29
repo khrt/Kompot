@@ -28,6 +28,8 @@ sub import {
     utf8->import;
     
     $class->export_to_level(1, $class, qw());
+
+    _app()->main($package);
 }
 
 sub _app   { Kompot::App->app }

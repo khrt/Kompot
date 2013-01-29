@@ -161,3 +161,19 @@ app->secret('verysecret');
 app->start;
 
 __DATA__
+
+@@ index.html.ep
+<!DOCTYPE html>
+<html>
+<head>
+<title>Data</title>
+</head>
+<body>
+<h1>DATA SECTION</h1>
+<p>Yeah!</p>
+</body>
+</html>
+
+@@ test.file
+aaaaaaaaaaa
+

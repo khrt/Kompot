@@ -35,6 +35,41 @@ sub load_package {
     return 1;
 }
 
+sub read_data {
+    my ($self, $class, $data) = @_;
+
+    state %CACHE;
+
+    # Refresh or use cached data
+    my $handle = do { no strict 'refs'; \*{"${class}::DATA"} };
+    return $data ? $CACHE{$class}{$data} : $CACHE{$class} || {}
+        if not fileno $handle;
+
+    seek $handle, 0, 0;
+    my $content = join '', <$handle>;
+    close $handle;
+
+    # Ignore everything before __DATA__ (Windows will seek to start of file)
+    $content =~ s/^.*\n__DATA__\r?\n/\n/s;
+
+    # Ignore everything after __END__
+    $content =~ s/\n__END__\r?\n.*$/\n/s;
+
+    # Split
+    my @data = split /^@@\s*(.+?)\s*\r?\n/m, $content;
+    shift @data;
+
+    # Find data
+    my $all = $CACHE{$class} = {};
+    while (@data) {
+        my ($name, $content) = splice @data, 0, 2;
+#        $content = b64_decode $content if $name =~ s/\s*\(\s*base64\s*\)$//;
+        $all->{$name} = $content;
+    }
+
+    return $data ? $all->{$data} : $all;
+}
+
 sub app { state $_app ||= Kompot::App->new }
 
 1;
