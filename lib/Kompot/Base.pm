@@ -10,10 +10,8 @@ use Carp;
 
 sub new {
     my $class = shift;
-
     my $self = bless {}, ref $class || $class;
     $self->init(@_);
-
     return $self;
 }
 
@@ -37,13 +35,13 @@ sub load_package {
 
 sub read_data {
     my ($self, $class, $data) = @_;
-
     state %CACHE;
 
     # Refresh or use cached data
     my $handle = do { no strict 'refs'; \*{"${class}::DATA"} };
-    return $data ? $CACHE{$class}{$data} : $CACHE{$class} || {}
-        if not fileno $handle;
+    if (not fileno $handle) {
+        return $data ? $CACHE{$class}{$data} : $CACHE{$class} || {};
+    }
 
     seek $handle, 0, 0;
     my $content = join '', <$handle>;
@@ -63,7 +61,6 @@ sub read_data {
     my $all = $CACHE{$class} = {};
     while (@data) {
         my ($name, $content) = splice @data, 0, 2;
-#        $content = b64_decode $content if $name =~ s/\s*\(\s*base64\s*\)$//;
         $all->{$name} = $content;
     }
 
