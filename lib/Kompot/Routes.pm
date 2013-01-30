@@ -64,11 +64,9 @@ sub dispatch {
         }
         else {
             my $c = Kompot::Controller->new($req);
-# TODO HOOK before dispatch
             $res = $route->code->($c);
             if ($res && $res->status == 200) {
                 $route->cache($res);
-# TODO HOOK after dispatch
             }
         }
     }
