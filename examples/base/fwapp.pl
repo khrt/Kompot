@@ -21,7 +21,7 @@ get '/json' => sub {
 
     my $data = {
         name  => 'hash',
-        array => [ 0, 1, 2, 3, 4 ],
+        array => [0, 1, 2, 3, 4],
         hash  => { key => 'value' },
     };
 
@@ -136,6 +136,7 @@ post '/upload' => sub {
     $self->render(text => "File: $name [$size]");
 };
 
+app->development(1);
 app->secret('verysecret');
 app->start;
 

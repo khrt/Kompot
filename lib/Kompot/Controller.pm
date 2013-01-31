@@ -20,7 +20,7 @@ has 'params';
 sub init {
     my ($self, $req) = @_;
 
-    # Init session
+    # Init session from cookie
     my $cookie_str = $req->cookie($self->app->conf->cookie_name);
     $self->session(Kompot::Session->new($cookie_str)->params);
 
@@ -88,7 +88,7 @@ sub render {
 
     my $app = $self->app;
 
-    my $r = $app->render->dynamic($self, $p);
+    my $r = $app->renderer->render($self, $p);
     if ($r && $r->status == 200) {
         # Set cookie
         my $cookie = Kompot::Session->new->store($self->session);
@@ -96,6 +96,81 @@ sub render {
     }
 
     return $r;
+}
+
+sub render_static {
+    my $self = shift;
+    my $path = $self->req->path;
+
+    my $out = $self->render->static($path);
+    return $self->not_found if not $out;
+
+    my $r =
+        Kompot::Response->new(
+            content_type   => 'text/html', # TODO detect content-type
+            content        => $out,
+            status         => 200,
+            content_length => length($out),
+        );
+
+    return $r;
+}
+
+# TODO
+sub render_not_found {
+    my $self = shift;
+
+    my $req = $self->req;
+    my %p = (path => $req->path,);
+
+    if ($self->app->development) {
+        $p{routes} = $self->app->route->routes;
+    }
+
+#    my $tmpl = $self->read_data_section(ref $self, 'not_found.html');
+
+# TODO Move to Kompot::Renderer::render
+    # Return user-defined 404
+#    foreach my $p (@{$self->paths}) {
+#        my $fp = $p . '/not_found.html';
+#        return $self->static($fp) if -e $fp;
+#    }
+# TODO
+# if has templates/not_found.html
+#   render templates/not_found.html
+# else
+#   render default template
+
+#    my $r =
+#        Kompot::Response->new(
+#            content_type   => 'text/plain',
+#            content        => $out,
+#            status         => 404,
+#            content_length => length($out),
+#        );
+
+    return $self->render('not_found'); # XXX
+}
+
+# TODO
+sub render_exception {
+    my ($self, $error) = @_;
+
+    my $stash = $self->stash;
+
+    if ($self->app->development) {
+        # params
+    }
+
+    return $self->render('exception');
+#    my $r =
+#        Kompot::Response->new(
+#            content_type   => 'text/plain',
+#            content        => $error,
+#            status         => 500,
+#            content_length => length($error),
+#        );
+#    return $r;
 }
 
 1;

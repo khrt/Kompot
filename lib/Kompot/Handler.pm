@@ -35,10 +35,9 @@ sub process_request {
     my $app = $self->app;
 
     my $res;
-    eval { $res = $app->routes->dispatch };
-
+    eval { $res = $app->dispatch };
     if ($@) {
-        $res = $app->render->internal_error($@);
+        carp $@;
     }
 
     # drop `content` and `content_length`

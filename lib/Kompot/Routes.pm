@@ -47,38 +47,6 @@ sub find {
     grep {(uc($method) eq $_->method) && $_->match($path)} @{ $self->{routes} };
 }
 
-sub dispatch {
-    my $self = shift;
-
-    my $res;
-    my $req = $self->app->request;
-
-    # static
-    if ($req->is_static) {
-        $res = $self->app->render->static($req->path);
-    }
-    # action
-    elsif (my ($route) = $self->find($req->method, $req->path)) {
-        if ($route->cached) {
-            $res = $route->cache;
-        }
-        else {
-            my $c = Kompot::Controller->new($req);
-            $res = $route->code->($c);
-            if ($res && $res->status == 200) {
-                $route->cache($res);
-            }
-        }
-    }
-
-    # 404
-    if (not $res) {
-        $res = $self->app->render->not_found;
-    }
-
-    return $res;
-}
-
 1;
 
 __END__

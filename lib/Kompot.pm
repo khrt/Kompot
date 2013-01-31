@@ -32,16 +32,14 @@ sub import {
     _app()->main($package);
 }
 
-sub _app   { Kompot::App->app }
-sub _start { _app->run }
+sub _app { Kompot::App->app }
 
-### Export subs
+sub secret      { _app->secret($_[1]) }
+sub development { _app->development($_[1]) }
 
-sub app   { __PACKAGE__ }
-sub start { goto &_start }
-
-sub secret { _app->secret(@_) }
-
+# For export
+sub app     { __PACKAGE__ }
+sub start   { _app->run }
 sub delete  { _app->route->add(['delete'],  @_) }
 sub get     { _app->route->add(['get'],     @_) }
 sub head    { _app->route->add(['head'],    @_) }

@@ -42,7 +42,7 @@ sub paths {
     return $self->{paths};
 }
 
-sub dynamic {
+sub render {
     my ($self, $c, $p) = @_;
 
     $p ||= {};
@@ -75,12 +75,16 @@ sub dynamic {
         }
     }
     else {
-        return $self->internal_error('No renderer');
+        # do somtheing
+        carp 'nothing to render';
+#        return $self->internal_error('render dynamic error');
     }
 
     # in case of errors
     if (not $out) {
-        return $self->internal_error('render dynamic error');
+        carp 'no out';
+        return;
+#        return $self->internal_error('render dynamic error');
     }
 
     my $r =
@@ -96,73 +100,43 @@ sub dynamic {
 
 sub static {
     my ($self, $path) = @_;
-
     my $out = Kompot::Renderer::Static->new->render($path);
-
-    if (not $out) {
-        croak 'file not found';
-        return $self->not_found('file not found');
-    }
-
-    my $r =
-        Kompot::Response->new(
-            content_type     => 'text/html', # TODO detect content-type
-            content          => $out,
-            status           => 200,
-            content_length   => length($out),
-        );
-
-    return $r;
+    return $out;
 }
 
-# TODO Move to Rendere::Exception
-sub not_found {
-    my ($self, $error) = @_;
+# TODO Maybe worth create implementing superclass for all template systems?
+sub read_data_section {
+    my ($self, $class, $data) = @_;
+    state %CACHE;
 
-    if (!$error) {
-        my $req = $self->app->request;
-        my @routes = $self->app->route->routes;
-        my $routes;
-
-        foreach (@routes) {
-            $routes .= $_->{method} . "\t=> " . $_->{path} . "\n";
-        }
-
-        $error = <<MSG_END;
-No route to `${ \$req->path }` via ${ \uc($req->method) }.
-Available routes:\n$routes
-MSG_END
+    # Refresh or use cached data
+    my $handle = do { no strict 'refs'; \*{"${class}::DATA"} };
+    if (not fileno $handle) {
+        return $data ? $CACHE{$class}{$data} : $CACHE{$class} || {};
     }
 
-    my $r =
-        Kompot::Response->new(
-            content_type     => 'text/plain',
-            content          => $error,
-            status           => 404,
-            content_length   => length($error),
-        );
+    seek $handle, 0, 0;
+    my $content = join '', <$handle>;
+    close $handle;
 
-p $self->read_data($self->app->main);
-say $self->read_data($self->app->main, 'index.html.ep');
-say $self->read_data(ref $self, 'not_found.html');
+    # Ignore everything before __DATA__ (Windows will seek to start of file)
+    $content =~ s/^.*\n__DATA__\r?\n/\n/s;
 
-    return $r;
-}
+    # Ignore everything after __END__
+    $content =~ s/\n__END__\r?\n.*$/\n/s;
 
-# TODO Move to Renderer::Exception
-sub internal_error {
-    my ($self, $error) = @_;
+    # Split
+    my @data = split /^@@\s*(.+?)\s*\r?\n/m, $content;
+    shift @data;
 
-    my $r =
-        Kompot::Response->new(
-            content_type     => 'text/plain',
-            content          => $error,
-            status           => 500,
-            'content-length' => length($error),
-            'x-powered-by'   => $self->app->name,
-        );
+    # Find data
+    my $all = $CACHE{$class} = {};
+    while (@data) {
+        my ($name, $content) = splice @data, 0, 2;
+        $all->{$name} = $content;
+    }
 
-    return $r;
+    return $data ? $all->{$data} : $all;
 }
 
 sub _is_text {
@@ -201,17 +175,5 @@ __DATA__
 <body>
 <h1>Exception</h1>
 <p>An error was happened.</p>
-</body>
-</html>
-
-@@ exception.dev.html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Exception DEV</title>
-</head>
-<body>
-<h1>Exception</h1>
-<p>An error was happened DEV.</p>
 </body>
 </html>
