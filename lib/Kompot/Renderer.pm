@@ -74,18 +74,8 @@ sub render {
             $out = $renderer->new($c)->render($template);
         }
     }
-    else {
-        # do somtheing
-        carp 'nothing to render';
-#        return $self->internal_error('render dynamic error');
-    }
 
-    # in case of errors
-    if (not $out) {
-        carp 'no out';
-        return;
-#        return $self->internal_error('render dynamic error');
-    }
+    return if not $out;
 
     my $r =
         Kompot::Response->new(

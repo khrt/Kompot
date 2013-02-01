@@ -20,6 +20,7 @@ has 'params';
 sub init {
     my ($self, $req) = @_;
 
+    # XXX Move to Kompot::App
     # Init session from cookie
     my $cookie_str = $req->cookie($self->app->conf->cookie_name);
     $self->session(Kompot::Session->new($cookie_str)->params);
@@ -91,8 +92,13 @@ sub render {
     my $r = $app->renderer->render($self, $p);
     if ($r && $r->status == 200) {
         # Set cookie
+        # XXX Move to Kompot:App?
         my $cookie = Kompot::Session->new->store($self->session);
         $r->set_cookie($cookie->to_string) if $cookie;
+    }
+
+    if (not $r) {
+        return $self->render_exception('can not render');
     }
 
     return $r;
