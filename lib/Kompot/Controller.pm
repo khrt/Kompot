@@ -20,11 +20,6 @@ has 'params';
 sub init {
     my ($self, $req) = @_;
 
-    # XXX Move to Kompot::App
-    # Init session from cookie
-    my $cookie_str = $req->cookie($self->app->conf->cookie_name);
-    $self->session(Kompot::Session->new($cookie_str)->params);
-
     $self->req($req);
     $self->params($req->params);
 }
@@ -79,61 +74,63 @@ sub redirect_to {
 
 sub render {
     my $self = shift;
-
     my $p = @_ % 2 ? $_[0] : {@_};
 
     my $template = $p->{template} ? $p->{template} : undef;
 
-    my $text = $p->{text};
-    my $json = $p->{json};
-
     my $app = $self->app;
 
-    my $r = $app->renderer->render($self, $p);
-    if ($r && $r->status == 200) {
-        # Set cookie
-        # XXX Move to Kompot:App?
-        my $cookie = Kompot::Session->new->store($self->session);
-        $r->set_cookie($cookie->to_string) if $cookie;
-    }
-
-    if (not $r) {
-        return $self->render_exception('can not render');
-    }
-
-    return $r;
-}
-
-sub render_static {
-    my $self = shift;
-    my $path = $self->req->path;
-
-    my $out = $self->render->static($path);
-    return $self->not_found if not $out;
+    my ($type, $out) = $app->renderer->render($self, $p);
+    return if not $out;
 
     my $r =
         Kompot::Response->new(
-            content_type   => 'text/html', # TODO detect content-type
-            content        => $out,
             status         => 200,
+            content_type   => $type,
             content_length => length($out),
+            content        => $out,
         );
 
     return $r;
 }
+
+#sub render_static {
+#    my $self = shift;
+#    my $p = @_ % 2 ? $_[0] : {@_};
+#
+#    my ($type, $out) =
+#        $self->renderer->static({
+#            content_type => $p->{content_type},
+#            path => $self->req->path,
+#        });
+#    return $self->render_not_found if not $out;
+#
+#    my $r =
+#        Kompot::Response->new(
+#            status         => 200,
+#            content_type   => $type,
+#            content_length => length($out),
+#            content        => $out,
+#        );
+#
+#    return $r;
+#}
 
 # TODO
 sub render_not_found {
     my $self = shift;
 
     my $req = $self->req;
-    my %p = (path => $req->path,);
+
+    my $p = {
+        engine   => 'mojo', # XXX by default use emperl
+        template => 'not_found',
+        path     => $req->path,
+    };
 
     if ($self->app->development) {
-        $p{routes} = $self->app->route->routes;
+        $p->{routes} = $self->app->route->routes;
     }
-
-#    my $tmpl = $self->read_data_section(ref $self, 'not_found.html');
 
 # TODO Move to Kompot::Renderer::render
     # Return user-defined 404
@@ -147,15 +144,10 @@ sub render_not_found {
 # else
 #   render default template
 
-#    my $r =
-#        Kompot::Response->new(
-#            content_type   => 'text/plain',
-#            content        => $out,
-#            status         => 404,
-#            content_length => length($out),
-#        );
+    my $res = $self->render($p);
+    $res->status(404);
 
-    return $self->render('not_found'); # XXX
+    return $res;
 }
 
 # TODO
@@ -164,19 +156,20 @@ sub render_exception {
 
     my $stash = $self->stash;
 
+    my $p;
+
     if ($self->app->development) {
-        # params
+        $p = {
+            engine => 'mojo', # XXX by default use emperl
+        };
     }
 
-    return $self->render('exception');
-#    my $r =
-#        Kompot::Response->new(
-#            content_type   => 'text/plain',
-#            content        => $error,
-#            status         => 500,
-#            content_length => length($error),
-#        );
-#    return $r;
+    $p->{template} = 'exception';
+
+    my $res = $self->render($p);
+    $res->status(500);
+
+    return $res;
 }
 
 1;

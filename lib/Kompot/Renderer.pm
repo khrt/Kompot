@@ -16,8 +16,14 @@ use Kompot::Renderer::Static;
 use Kompot::Response;
 
 has default_content_type => 'text/html';
-has engine  => 'Kompot::Renderer::MojoTemplate';
+has engine  => 'Kompot::Renderer::Mojo';
 has helpers => {};
+
+my %ENGINES = (
+    mojo   => 'Kompot::Renderer::Mojo',
+    xslate => 'Kompot::Renderer::Xslate',
+    emperl => 'Kompot::Renderer::EmPerl',
+);
 
 sub init {
     my $self = shift;
@@ -69,11 +75,21 @@ sub render {
         $type = $p->{content_type} || 'text/plain';
     }
     elsif (defined($template)) {
+
+        # TODO
+        # 1. Check template in path
+        # 2. Check template in __DATA__
+        # 3. Then render it
+
         my $renderer = $self->engine;
         if ($self->load_package($renderer)) {
             $out = $renderer->new($c)->render($template);
         }
+
     }
+
+    return ($type, $out);
+
 
     return if not $out;
 
@@ -89,12 +105,13 @@ sub render {
 }
 
 sub static {
-    my ($self, $path) = @_;
-    my $out = Kompot::Renderer::Static->new->render($path);
-    return $out;
+    my ($self, $p) = @_;
+    my $out = Kompot::Renderer::Static->new->render($p->{path});
+    my $type = $p->{content_type} || $self->default_content_type;
+    return ($type, $out);
 }
 
-# TODO Maybe worth create implementing superclass for all template systems?
+# XXX Maybe worth create implementing superclass for all template systems?
 sub read_data_section {
     my ($self, $class, $data) = @_;
     state %CACHE;
@@ -127,11 +144,6 @@ sub read_data_section {
     }
 
     return $data ? $all->{$data} : $all;
-}
-
-sub _is_text {
-    my ($self, $content_type) = @_;
-    return $content_type =~ /(x(?:ht)?ml|text|json|javascript)/;
 }
 
 1;

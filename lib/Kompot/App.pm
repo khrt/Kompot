@@ -75,7 +75,8 @@ sub dispatch {
 
     # static
     if ($req->is_static) {
-        $res = $c->render_static; # XXX Direct render?
+#        $res = $c->render_static;
+        carp 'static?';
     }
     # action
     elsif (my ($route) = $r->find($req->method, $req->path)) {
@@ -83,16 +84,32 @@ sub dispatch {
             $res = $route->cache;
         }
         else {
-            # TODO Handle exceptions
-            $res = $route->code->($c);
+            # Init session from cookie
+            my $cookie_str = $req->cookie($self->conf->cookie_name);
+            my $s = Kompot::Session->new($cookie_str);
+            $c->session($s->params);
+
+            eval { $res = $route->code->($c) };
+            if ($@) {
+                croak '-- ' x 5;
+                croak $@;
+                croak '-- ' x 5;
+                $res = $c->render_exception($@);
+            }
+
             if ($res && $res->status == 200) {
                 $route->cache($res);
+
+                # Set cookie
+                my $cookie = Kompot::Session->new->store($c->session);
+                $res->set_cookie($cookie->to_string) if $cookie;
             }
         }
     }
 
     # 404
     if (not $res) {
+        warn 'here!!!';
         $res = $c->render_not_found;
     }
 

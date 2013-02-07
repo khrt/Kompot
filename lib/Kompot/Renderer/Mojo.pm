@@ -1,4 +1,4 @@
-package Kompot::Renderer::MojoTemplate;
+package Kompot::Renderer::Mojo;
 
 use strict;
 use warnings;

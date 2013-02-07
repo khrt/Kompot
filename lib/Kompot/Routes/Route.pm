@@ -100,6 +100,8 @@ sub _path_keys {
     return $self->{_path_keys};
 }
 
+# TODO IMPROVE CACHE!
+# TODO Use cookie params in cache hash!!!
 sub _cache_filename {
     my $self = shift;
 
