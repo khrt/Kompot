@@ -160,11 +160,11 @@ __DATA__
 <h1>Page not found</h1>
 <% if ($development) { %>
 <p>Was requested page: <%= $uri %></p>
-<ul>
+<pre>
 <% foreach my $r (@$routes) { %>
-  <li><%= $r->{method} %> <%= $r->{path} %></li>
+  <%= $r->{method} %> <%= $r->{path} %>
 <% } # foreach %>
-</ul>
+</pre>
 <% } # if %>
 </body>
 </html>
