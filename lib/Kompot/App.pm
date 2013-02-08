@@ -76,7 +76,7 @@ sub dispatch {
     # static
     if ($req->is_static) {
 #        $res = $c->render_static;
-        carp 'static?';
+        croak 'static?';
     }
     # action
     elsif (my ($route) = $r->find($req->method, $req->path)) {
