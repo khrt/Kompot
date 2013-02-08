@@ -109,7 +109,6 @@ sub dispatch {
 
     # 404
     if (not $res) {
-        warn 'here!!!';
         $res = $c->render_not_found;
     }
 

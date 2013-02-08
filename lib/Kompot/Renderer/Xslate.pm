@@ -38,6 +38,8 @@ sub render {
             %options,
         });
 
+# TODO get_data_template
+
     my $out;
     eval { $out = $xslate->render($name, $c->stash); };
     if ($@) {

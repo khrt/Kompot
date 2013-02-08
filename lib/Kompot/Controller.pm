@@ -116,35 +116,22 @@ sub render {
 #    return $r;
 #}
 
-# TODO
 sub render_not_found {
     my $self = shift;
 
-    my $req = $self->req;
-
-    my $p = {
-        engine   => 'mojo', # XXX by default use emperl
-        template => 'not_found',
-        path     => $req->path,
-    };
+    $self->stash(
+        engine      => 'mojo',
+        template    => 'not_found',
+        uri         => $self->req->path,
+        development => $self->app->development
+    );
 
     if ($self->app->development) {
-        $p->{routes} = $self->app->route->routes;
+        my @routes = $self->app->route->routes;
+        $self->stash(routes => \@routes);
     }
 
-# TODO Move to Kompot::Renderer::render
-    # Return user-defined 404
-#    foreach my $p (@{$self->paths}) {
-#        my $fp = $p . '/not_found.html';
-#        return $self->static($fp) if -e $fp;
-#    }
-# TODO
-# if has templates/not_found.html
-#   render templates/not_found.html
-# else
-#   render default template
-
-    my $res = $self->render($p);
+    my $res = $self->render;
     $res->status(404);
 
     return $res;

@@ -21,7 +21,7 @@ has helpers => {};
 
 my %ENGINES = (
     mojo   => 'Kompot::Renderer::Mojo',
-    xslate => 'Kompot::Renderer::Xslate',
+    xslate => 'Kompot::Renderer::Xslate', # YAGNI?
     emperl => 'Kompot::Renderer::EmPerl',
 );
 
@@ -75,17 +75,10 @@ sub render {
         $type = $p->{content_type} || 'text/plain';
     }
     elsif (defined($template)) {
-
-        # TODO
-        # 1. Check template in path
-        # 2. Check template in __DATA__
-        # 3. Then render it
-
         my $renderer = $self->engine;
         if ($self->load_package($renderer)) {
             $out = $renderer->new($c)->render($template);
         }
-
     }
 
     return ($type, $out);
@@ -111,9 +104,20 @@ sub static {
     return ($type, $out);
 }
 
-# XXX Maybe worth create implementing superclass for all template systems?
-sub read_data_section {
+# TODO
+sub get_data_template {
+    my ($self, $name) = @_;
+
+    my $data_main = $self->read_data_template($self->app->main);
+    my $data_pack = $self->read_data_template(__PACKAGE__);
+
+    return $data_main->{$name} || $data_pack->{$name};
+}
+
+# TODO
+sub read_data_template {
     my ($self, $class, $data) = @_;
+
     state %CACHE;
 
     # Refresh or use cached data
@@ -150,7 +154,7 @@ sub read_data_section {
 
 __DATA__
 
-@@ not_found.html
+@@ not_found.html.ep
 <!DOCTYPE html>
 <html>
 <head>
@@ -158,17 +162,18 @@ __DATA__
 </head>
 <body>
 <h1>Page not found</h1>
-<p>Requested URI not found.</p>
-<% if ($dev_mode) {
-  foreach my $r (@routes) {
-    print $r->method;
-    print $r->path;
-  }
-} %>
+<% if ($development) { %>
+<p>Was requested page: <%= $uri %></p>
+<ul>
+<% foreach my $r (@$routes) { %>
+  <li><%= $r->{method} %> <%= $r->{path} %></li>
+<% } # foreach %>
+</ul>
+<% } # if %>
 </body>
 </html>
 
-@@ exception.html
+@@ exception.html.ep
 <!DOCTYPE html>
 <html>
 <head>

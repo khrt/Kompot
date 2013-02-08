@@ -101,7 +101,7 @@ get '/render/mojo' => sub {
         p     => 'This is paragraph.',
     );
 
-    $self->render(template => 'mojo.ep');
+    $self->render(template => 'mojo');
 };
 
 get '/render/xslate' => sub {
@@ -123,7 +123,7 @@ get '/redirect' => sub {
 
 get '/upload' => sub {
     my $self = shift;
-    $self->render(template => 'upload.ep');
+    $self->render(template => 'upload');
 };
 
 post '/upload' => sub {

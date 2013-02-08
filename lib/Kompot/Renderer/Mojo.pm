@@ -46,13 +46,18 @@ sub register_default_helpers {
 sub render {
     my ($self, $name) = @_;
 
-    my $tmpl = $self->_template_path($name) or return;
-    my $out = $self->_process($tmpl) or return;
+    return if not $name;
+    $name = "$name.html.ep";
+
+#    my $tmpl = $self->_template_path($name) or return;
+#    my $out = $self->_process($tmpl) or return;
+    my $out = $self->_process($name) or return;
 
     while (my $extends = $self->_extends($self)) {
         $self->stash(content => $out);
-        $tmpl = $self->_template_path($extends) or return;
-        $out = $self->_process($tmpl) or return;
+#        $tmpl = $self->_template_path($extends) or return;
+#        $out = $self->_process($tmpl) or return;
+        $out = $self->_process($name) or return;
     }
 
     return $out;
@@ -61,15 +66,13 @@ sub render {
 sub _template_path {
     my ($self, $name) = @_;
 
-    return if not $name;
-
     my $paths = $self->app->renderer->paths;
     for my $path (@$paths) {
         my $file = catfile($path, split('/', $name));
         return $file if -r $file;
     }
 
-    carp "Can't find `$name` in paths.";
+#    carp "Can't find `$name` in paths.";
     return;
 }
 
@@ -85,7 +88,7 @@ sub _extends {
 }
 
 sub _process {
-    my ($self, $tmpl) = @_;
+    my ($self, $name) = @_;
 
     my $c = $self->c;
     my $stash   = $c->stash;
@@ -117,7 +120,18 @@ my $_H = $self->app->renderer->helpers;
     my $mt = Mojo::Template->new(encoding => 'UTF-8');
     $mt->prepend($prepend);
 
-    my $out = $mt->name($tmpl)->render_file($tmpl, $c);
+    my $out;
+    
+    if (my $file = $self->_template_path($name)) {
+        $out = $mt->name("FILE $file")->render_file($file, $c);
+    }
+    elsif (my $data = $self->app->renderer->get_data_template($name)) {
+        $out = $mt->name("DATA $name")->render($data, $c);
+    }
+    else {
+        carp "Can not find template `$name`!";
+        return;
+    }
 
     if (ref $out) {
         carp 'Render error: ' . $out->to_string;
