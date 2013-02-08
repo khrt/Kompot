@@ -141,19 +141,16 @@ sub render_not_found {
 sub render_exception {
     my ($self, $error) = @_;
 
-    my $stash = $self->stash;
-
-    my $p;
+    $self->stash(
+        engine   => 'mojo',
+        template => 'exception',
+        error    => $error,
+    );
 
     if ($self->app->development) {
-        $p = {
-            engine => 'mojo', # XXX by default use emperl
-        };
     }
 
-    $p->{template} = 'exception';
-
-    my $res = $self->render($p);
+    my $res = $self->render;
     $res->status(500);
 
     return $res;

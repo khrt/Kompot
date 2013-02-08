@@ -91,9 +91,8 @@ sub dispatch {
 
             eval { $res = $route->code->($c) };
             if ($@) {
-                croak '-- ' x 5;
-                croak $@;
-                croak '-- ' x 5;
+                carp '!!! ' x 5;
+                carp $@;
                 $res = $c->render_exception($@);
             }
 
@@ -110,6 +109,13 @@ sub dispatch {
     # 404
     if (not $res) {
         $res = $c->render_not_found;
+    }
+
+    # drop `content` and `content_length`
+    # if `response` is `1xx` or `204`, `304`
+    if ($res->status =~ /^(?:2|3)04$|^1\d{2}$/) {
+        $res->{content} = [''];
+        $res->header('content-length' => 0);
     }
 
     return $res;

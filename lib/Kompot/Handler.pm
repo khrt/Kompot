@@ -37,14 +37,7 @@ sub process_request {
     my $res;
     eval { $res = $app->dispatch };
     if ($@) {
-        carp $@;
-    }
-
-    # drop `content` and `content_length`
-    # if `response` is `1xx` or `204`, `304`
-    if ($res->status =~ /^(?:2|3)04$|^1\d{2}$/) {
-        $res->{content} = [''];
-        $res->header('content-length' => 0);
+        croak "STOP EXECUTING! FATAL ERROR OCCURED!\n$@";
     }
 
     return [$res->status, $res->headers, $res->content];

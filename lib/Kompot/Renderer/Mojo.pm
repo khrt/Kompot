@@ -134,8 +134,7 @@ my $_H = $self->app->renderer->helpers;
     }
 
     if (ref $out) {
-        carp 'Render error: ' . $out->to_string;
-        return;
+        croak 'Render error: ' . $out->to_string;
     }
 
     return $out;

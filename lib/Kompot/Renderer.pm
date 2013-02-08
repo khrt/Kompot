@@ -82,19 +82,15 @@ sub render {
     }
 
     return ($type, $out);
-
-
-    return if not $out;
-
-    my $r =
-        Kompot::Response->new(
-            status         => 200,
-            content_type   => $type,
-            content_length => length($out),
-            content        => $out,
-        );
-
-    return $r;
+#    return if not $out;
+#    my $r =
+#        Kompot::Response->new(
+#            status         => 200,
+#            content_type   => $type,
+#            content_length => length($out),
+#            content        => $out,
+#        );
+#    return $r;
 }
 
 sub static {
@@ -182,5 +178,8 @@ __DATA__
 <body>
 <h1>Exception</h1>
 <p>An error was happened.</p>
+<pre>
+<%== $error %>
+</pre>
 </body>
 </html>
