@@ -73,13 +73,8 @@ sub dispatch {
     my $c = Kompot::Controller->new($req);
     my $r = $self->routes;
 
-    # static
-    if ($req->is_static) {
-#        $res = $c->render_static;
-        croak 'static?';
-    }
     # action
-    elsif (my ($route) = $r->find($req->method, $req->path)) {
+    if (my ($route) = $r->find($req->method, $req->path)) {
         if ($route->cached) {
             $res = $route->cache;
         }
@@ -91,7 +86,6 @@ sub dispatch {
 
             eval { $res = $route->code->($c) };
             if ($@) {
-                carp '!!! ' x 5;
                 carp $@;
                 $res = $c->render_exception($@);
             }
@@ -110,10 +104,9 @@ sub dispatch {
     if (not $res) {
         $res = $c->render_not_found;
     }
-
+    elsif ($res->status =~ /^(?:2|3)04$|^1\d{2}$/) {
     # drop `content` and `content_length`
     # if `response` is `1xx` or `204`, `304`
-    if ($res->status =~ /^(?:2|3)04$|^1\d{2}$/) {
         $res->{content} = [''];
         $res->header('content-length' => 0);
     }
