@@ -31,9 +31,8 @@ sub psgi_app {
 sub process_request {
     my $self = shift;
 
-    my $res;
-    eval { $res = $self->app->dispatch };
-    if ($@) {
+    my $res = $self->app->dispatch;
+    if (not $res) {
         croak "STOP EXECUTING! FATAL ERROR OCCURED!\n$@";
     }
 
