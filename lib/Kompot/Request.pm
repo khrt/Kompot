@@ -14,9 +14,9 @@ use base 'Kompot::Base';
 use Kompot::Attributes;
 
 has env => {};
-has content_length => 0;
-has input_handle   => undef;
-has is_forward     => 0;
+has content_length => 0; # XXX Deprecated / To delete
+has input => undef;
+has is_forward => 0;
 has is_static => sub { shift->path =~ /\.[\w\d]+$/ };
 has method    => undef;
 has path      => '/';
@@ -36,12 +36,13 @@ sub init {
     # set attrs
     $self->env($env);
     $self->content_length($env->{CONTENT_LENGTH});
-    $self->input_handle($env->{'psgi.input'} || $env->{'PSGI.INPUT'});
+    $self->input($env->{'psgi.input'} || $env->{'PSGI.INPUT'});
     $self->method($env->{REQUEST_METHOD});
     $self->path($env->{PATH_INFO});
     $self->uri($env->{REQUEST_URI});
 
     $self->_build_params;
+    $self->_parse_cookies;
 }
 
 sub param {
@@ -74,14 +75,13 @@ sub _set_route_params {
 sub _build_params {
     my $self = shift;
 
-    $self->_parse_query_params;
-    $self->_parse_cookies;
+    $self->_parse_query;
 
     if ($self->is_forward) {
         $self->{_body_params} = {};
     }
     else {
-        $self->_parse_body_params;
+        $self->_parse_body;
     }
 
     # and merge everything
@@ -93,6 +93,8 @@ sub _build_params {
 
 }
 
+# TODO make wrapper
+# TODO rename
 sub _parse_cookies {
     my $self = shift;
 
@@ -111,23 +113,47 @@ sub _parse_cookies {
     return $cookies;
 }
 
-sub _parse_query_params {
+# TODO make wrapper
+# TODO rename
+sub _parse_query {
     my $self = shift;
 
     return $self->{_query_params} if defined $self->{_query_params};
 
-    $self->{_query_params}
-        = $self->_parse_params($self->env->{QUERY_STRING}) || {};
+    # From Plack::Request
+    my @query;
+    my $query_string = $self->env->{QUERY_STRING};
 
-    return $self->{_query_params};
+    if (defined $query_string) {
+        if ($query_string =~ /=/) {
+            # Handle  ?foo=bar&bar=foo type of query
+            @query =
+                map { s/\+/ /g; URI::Escape::uri_unescape($_) }
+                map { /=/ ? split(/=/, $_, 2) : ($_ => '') }
+                split(/[&;]/, $query_string);
+        }
+        else {
+            # Handle ...?dog+bones type of query
+            @query =
+                map { (URI::Escape::uri_unescape($_), '') }
+                split(/\+/, $query_string, -1);
+        }
+    }
+
+    my %params = _array_to_multivalue_hash(@query);
+    $self->{_query_params} = \%params;
+
+    return \%params;
 }
 
-sub _parse_body_params {
+# TODO make wrapper
+# TODO rename
+sub _parse_body {
     my $self = shift;
     return $self->{_body_params} if defined $self->{_body_params};
 
     my $content_length = $self->content_length;
-    return if not $self->input_handle;
+    return if not $self->input;
 
     my $body;
     if ($content_length > 0) {
@@ -140,6 +166,9 @@ sub _parse_body_params {
     return $self->{_body_params};
 }
 
+# XXX Obsolete, DEPRECATED
+# XXX Delete
+# XXX uses in _parse_body
 sub _parse_params {
     my ($self, $params) = @_;
 
@@ -175,6 +204,22 @@ sub _parse_params {
     return $pp;
 }
 
+# From Plack::Request
+sub content {
+    my $self = shift;
+
+    my $fh = $self->input or return;
+    my $length = $self->content_length or return;
+
+    my $content;
+
+    $fh->seek(0, 0);
+    $fh->read($content, $length, 0);
+    $fh->seek(0, 0);
+
+    return $content;
+}
+
 # taken from Miyagawa's Plack::Request::BodyParser from Dancer::Request (=
 sub _read {
     my $self = shift;
@@ -188,7 +233,7 @@ sub _read {
 
     my ($buffer, $rc);
 
-    $rc = $self->input_handle->read($buffer, $readlen);
+    $rc = $self->input->read($buffer, $readlen);
 
     if (not defined($rc)) {
         croak "Unknown error reading input: $!";
@@ -206,6 +251,29 @@ sub _url_decode {
     $data =~ s/%([a-fA-F0-9]{2})/pack 'H2', $1/eg;
 
     return $data;
+}
+
+sub _array_to_multivalue_hash {
+    my @query = shift;
+    my %params;
+    while (my ($key, $value) = splice(@query, 0, 2)) {
+        # multi value
+        if (exists $params{$key}) {
+            my $previous = $params{$key};
+
+            if (ref $previous) {
+                push(@{$params{$key}}, $value);
+            }
+            else {
+                $params{$key} = [$previous, $value];
+            }
+        }
+        # single value
+        else {
+            $params{$key} = $value;
+        }
+    }
+    return %params;
 }
 
 1;
