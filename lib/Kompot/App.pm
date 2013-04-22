@@ -80,8 +80,9 @@ sub dispatch {
         }
         else {
             # Init session from cookie
-            my $cookie_str = $req->cookie($self->conf->cookie_name);
-            my $s = Kompot::Session->new($cookie_str);
+            my $cookie_name = $self->conf->cookie_name;
+            my $cookie_value = $req->cookie($cookie_name);
+            my $s = Kompot::Session->new($cookie_name => $cookie_value);
             $c->session($s->params);
 
             eval { $res = $route->code->($c) };

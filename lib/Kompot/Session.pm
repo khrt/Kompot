@@ -19,8 +19,10 @@ use Kompot::Cookie;
 has cookie => '';
 
 sub init {
-    my ($self, $cookie_str) = @_;
-    $self->cookie(Kompot::Cookie->new($cookie_str));
+    my ($self, $cookie_name, $cookie_value) = @_;
+    $self->cookie(
+        Kompot::Cookie->new(name => $cookie_name, value => $cookie_value)
+    );
 }
 
 # from cookie to session values

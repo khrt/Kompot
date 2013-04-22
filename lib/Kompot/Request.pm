@@ -10,17 +10,21 @@ use DDP { output => 'stdout' };
 use Carp;
 use URI::Escape;
 
+use HTTP::Body;
+use Stream::Buffered;
+use Hash::MultiValue;
+
 use base 'Kompot::Base';
 use Kompot::Attributes;
 
 has env => {};
-has content_length => 0; # XXX Deprecated / To delete
-has input => undef;
+has content_length => 0;
+has content_type => undef;
 has is_forward => 0;
-has is_static => sub { shift->path =~ /\.[\w\d]+$/ };
-has method    => undef;
-has path      => '/';
-has uri       => undef;
+has input  => undef;
+has method => undef;
+has path   => '/';
+has uri    => undef;
 
 sub init {
     my $self = shift;
@@ -29,20 +33,17 @@ sub init {
 
     $self->{_read_position} = 0;
     $self->{_chunk_size}    = 4096;
-    $self->{_body_params}   = undef;
-    $self->{_query_params}  = undef;
-    $self->{_route_params}  = {};
 
     # set attrs
     $self->env($env);
     $self->content_length($env->{CONTENT_LENGTH});
+    $self->content_type($env->{CONTENT_TYPE});
     $self->input($env->{'psgi.input'} || $env->{'PSGI.INPUT'});
     $self->method($env->{REQUEST_METHOD});
     $self->path($env->{PATH_INFO});
     $self->uri($env->{REQUEST_URI});
 
     $self->_build_params;
-    $self->_parse_cookies;
 }
 
 sub param {
@@ -55,70 +56,34 @@ sub params {
     return $self->{params} || {};
 }
 
-sub cookie {
-    my ($self, $name) = @_;
-    return $self->{_cookies}->{$name} if $name;
-    return $self->{_cookies};
-}
-
 sub _set_route_params {
     my ($self, $p) = @_;
 
-    $self->{_route_params} = $p;
-
-    map { $p->{$_} = $self->_url_decode($p->{$_}) } keys %$p;
-
-    $self->_build_params;
+    $self->{'kompot.request.route'} = $p;
+    map { $p->{$_} = URI::Escape::uri_unescape($p->{$_}) } keys %$p;
+    $self->_build_params; # XXX TODO Rework it!
 }
 
-# Taken from Dancer::Request
 sub _build_params {
     my $self = shift;
 
     $self->_parse_query;
-
-    if ($self->is_forward) {
-        $self->{_body_params} = {};
-    }
-    else {
-        $self->_parse_body;
-    }
+    $self->_parse_body;
 
     # and merge everything
     $self->{params} = {
-        %{ $self->{_query_params} },
-        %{ $self->{_route_params} },
-        %{ $self->{_body_params} },
+        %{ $self->{'kompot.request.query'} || {} },
+        %{ $self->{'kompot.request.route'} || {} },
+        %{ $self->{'kompot.request.body'}  || {} },
     };
 
+    return $self->{params};
 }
 
-# TODO make wrapper
-# TODO rename
-sub _parse_cookies {
-    my $self = shift;
-
-    my $cookies_str = $self->env->{COOKIE} || $self->env->{HTTP_COOKIE};
-    return if not $cookies_str;
-
-    my $cookies = {};
-
-    foreach my $cookie (split(/[,;]\s?/, $cookies_str)) {
-        my ($name) = split '=', $cookie;
-        $cookies->{$name} = $cookie;
-    }
-
-    $self->{_cookies} = $cookies;
-
-    return $cookies;
-}
-
-# TODO make wrapper
-# TODO rename
 sub _parse_query {
     my $self = shift;
 
-    return $self->{_query_params} if defined $self->{_query_params};
+    return $self->{'kompot.request.query'} if $self->{'kompot.request.query'};
 
     # From Plack::Request
     my @query;
@@ -141,67 +106,82 @@ sub _parse_query {
     }
 
     my %params = _array_to_multivalue_hash(@query);
-    $self->{_query_params} = \%params;
+    $self->{'kompot.request.query'} = \%params;
 
     return \%params;
 }
 
 # TODO make wrapper
-# TODO rename
 sub _parse_body {
     my $self = shift;
-    return $self->{_body_params} if defined $self->{_body_params};
 
-    my $content_length = $self->content_length;
-    return if not $self->input;
+    my $ct = $self->content_type;
+    my $cl = $self->content_length;
 
-    my $body;
-    if ($content_length > 0) {
-        while (my $buffer = $self->_read) {
-            $body .= $buffer;
+    if (!$ct && !$cl) {
+        # No Content-Type nor Content-Length -> GET/HEAD
+        return;
+    }
+
+    my $body = HTTP::Body->new($ct, $cl);
+
+    # HTTP::Body will create temporary files in case there was an
+    # upload.  Those temporary files can be cleaned up by telling
+    # HTTP::Body to do so. It will run the cleanup when the request
+    # env is destroyed. That the object will not go out of scope by
+    # the end of this sub we will store a reference here.
+    $self->{'kompot.request.http.body'} = $body;
+    $body->cleanup(1);
+
+    my $input = $self->input;
+
+    my $buffer;
+    if ($self->env->{'psgix.input.buffered'}) {
+        # Just in case if input is read by middleware/apps beforehand
+        $input->seek(0, 0);
+    }
+    else {
+        $buffer = Stream::Buffered->new($cl);
+    }
+
+    my $spin = 0;
+    while ($cl) {
+        $input->read(my $chunk, $cl < 8192 ? $cl : 8192);
+
+        my $read = length $chunk;
+        $cl -= $read;
+
+        $body->add($chunk);
+        $buffer->print($chunk) if $buffer;
+
+        if ($read == 0 && $spin++ > 2000) {
+            Carp::croak "Bad Content-Length: maybe client disconnect? ($cl bytes remaining)";
         }
     }
 
-    $self->{_body_params} = $self->_parse_params($body) || {};
-    return $self->{_body_params};
-}
-
-# XXX Obsolete, DEPRECATED
-# XXX Delete
-# XXX uses in _parse_body
-sub _parse_params {
-    my ($self, $params) = @_;
-
-    return {} if not $params;
-
-    my $pp;
-
-    foreach my $token (split /[&;]/, $params) {
-        my ($key, $val) = split(/=/, $token, 2);
-        next if not defined $key;
-
-        $key = $self->_url_decode($key);
-        $val = (defined $val) ? $val : '';
-        $val = $self->_url_decode($val);
-
-        # looking for multi-value params
-        if (exists $pp->{$key}) {
-            my $prev_val = $pp->{$key};
-
-            if (ref($prev_val) && ref($prev_val) eq 'ARRAY') {
-                push(@{ $pp->{$key} }, $val);
-            }
-            else {
-                $pp->{$key} = [$prev_val, $val];
-            }
-        }
-        # simple value param (first time we see it)
-        else {
-            $pp->{$key} = $val;
-        }
+    if ($buffer) {
+        $self->env->{'psgix.input.buffered'} = 1;
+        $self->env->{'psgi.input'} = $buffer->rewind;
+    }
+    else {
+        $input->seek(0, 0);
     }
 
-    return $pp;
+    $self->{'kompot.request.body'} = $body->param;
+
+    my @uploads = Hash::MultiValue->from_mixed($body->upload)->flatten;
+use Data::Dumper qw(Dumper);
+print STDOUT "upload\n";
+print STDOUT Dumper($body->upload);
+print STDOUT Dumper(\@uploads);
+    my @obj;
+    while (my($k, $v) = splice @uploads, 0, 2) {
+        push @obj, $k, $self->_make_upload($v);
+    }
+
+    $self->env->{'kompot.request.upload'} = _array_to_multivalue_hash(@obj);
+
+    return 1;
 }
 
 # From Plack::Request
@@ -220,43 +200,11 @@ sub content {
     return $content;
 }
 
-# taken from Miyagawa's Plack::Request::BodyParser from Dancer::Request (=
-sub _read {
-    my $self = shift;
-
-    my $remaining = $self->content_length - $self->{_read_position};
-    my $maxlength = $self->{_chunk_size};
-
-    return if $remaining <= 0;
-
-    my $readlen = ($remaining > $maxlength) ? $maxlength : $remaining;
-
-    my ($buffer, $rc);
-
-    $rc = $self->input->read($buffer, $readlen);
-
-    if (not defined($rc)) {
-        croak "Unknown error reading input: $!";
-    }
-
-    $self->{_read_position} += $rc;
-    return $buffer;
-}
-
-# Taken from Dancer::Request
-sub _url_decode {
-    my ($self, $data) = @_;
-
-    $data =~ tr/\+/ /;
-    $data =~ s/%([a-fA-F0-9]{2})/pack 'H2', $1/eg;
-
-    return $data;
-}
-
 sub _array_to_multivalue_hash {
     my @query = shift;
     my %params;
     while (my ($key, $value) = splice(@query, 0, 2)) {
+        next if not $key;
         # multi value
         if (exists $params{$key}) {
             my $previous = $params{$key};
@@ -275,6 +223,49 @@ sub _array_to_multivalue_hash {
     }
     return %params;
 }
+
+
+
+sub cookie {
+    my ($self, $name) = @_;
+    $self->cookies or return;
+    return $self->{'kompot.cookie.parsed'}{$name} if $name;
+    return $self->{'kompot.cookie.parsed'};
+}
+
+# like Plack::Request::cookies
+sub cookies {
+    my $self = shift;
+
+    my $http_cookie = $self->env->{HTTP_COOKIE} or return;
+
+    if (   $http_cookie
+        && $self->{'kompot.cookie.parsed'}
+        && $http_cookie eq $self->{'kompot.cookie.string'})
+    {
+        return $self->{'kompot.cookie.parsed'};
+    }
+
+    my %cookies;
+
+    for my $pair (grep { /=/ } split '[;,] ?', $http_cookie) {
+        # trim leading trailing whitespace
+        $pair =~ s/^\s+//;
+        $pair =~ s/\s+$//;
+
+        my ($key, $value) =
+            map { URI::Escape::uri_unescape($_) } split "=", $pair, 2;
+
+        # Take the first one like CGI.pm or rack do
+        $cookies{$key} = $value if not exists $cookies{$key};
+    }
+
+    $self->{'kompot.cookie.string'} = $http_cookie;
+    $self->{'kompot.cookie.parsed'} = \%cookies;
+
+    return \%cookies;
+}
+
 
 1;
 

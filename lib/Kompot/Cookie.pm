@@ -8,7 +8,6 @@ use v5.12;
 
 use DDP { output => 'stdout' };
 use Carp;
-use URI::Escape;
 
 use base 'Kompot::Base';
 use Kompot::Attributes;
@@ -18,30 +17,23 @@ has 'value';
 
 sub init {
     my $self = shift;
-    my $cookie = @_ % 2 ? $_[0] : {@_};
+    my $p = @_ % 2 ? $_[0] : {@_};
 
-    if (ref($cookie)) {
-        foreach (qw(name value path domain)) {
-            my $v = $cookie->{$_};
-            $self->{$_} = $v;
-        }
+    if (not $p) {
+        return $self;
+    }
+    elsif (not ref $p) {
+        carp 'Cookie is not HASHREF!';
+        return $self;
+    }
 
-        $self->{expires}   = $self->_expires($cookie->{expires});
-        $self->{secure}    = $cookie->{secure} ? 1 : 0;
-        $self->{http_only} = $cookie->{http_only} ? 1 : 0;
-    }
-    else {
-        ($self->{name}, $self->{value}) = $self->parse($cookie);
-    }
+    map { $self->{$_} = $p->{$_} } qw(name value path domain);
+
+    $self->{expires}   = $self->_expires($p->{expires});
+    $self->{secure}    = $p->{secure} ? 1 : 0;
+    $self->{http_only} = $p->{http_only} ? 1 : 0;
 
     return 1;
-}
-
-sub parse {
-    my ($self, $cookie_str) = @_;
-    return if not $cookie_str;
-    my ($name, $value) = split(/\s*=\s*/, $cookie_str, 2);
-    return ($name, uri_unescape($value));
 }
 
 sub to_string {
