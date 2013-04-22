@@ -7,5 +7,11 @@
   <h1><%= $head %></h1>
   <p><%= $p %></p>
   <pre><%= dummy() %></pre>
+% if (1) {
+text
+% }
+% else {
+else text
+% }
 </body>
 </html>
