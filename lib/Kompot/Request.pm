@@ -105,7 +105,7 @@ sub _parse_query {
         }
     }
 
-    my %params = _array_to_multivalue_hash(@query);
+    my %params = _array_to_multivalue_hash(@query); # FIX not func!
     $self->{'kompot.request.query'} = \%params;
 
     return \%params;
@@ -201,7 +201,7 @@ sub content {
 }
 
 sub _array_to_multivalue_hash {
-    my @query = shift;
+    my @query = @_;
     my %params;
     while (my ($key, $value) = splice(@query, 0, 2)) {
         next if not $key;
@@ -223,8 +223,6 @@ sub _array_to_multivalue_hash {
     }
     return %params;
 }
-
-
 
 sub cookie {
     my ($self, $name) = @_;
