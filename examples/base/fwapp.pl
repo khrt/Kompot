@@ -129,8 +129,8 @@ get '/upload' => sub {
 post '/upload' => sub {
     my $self = shift;
 
-    my $file = $self->param('file');
-    my $name = $file->name;
+    my $file = $self->upload('file');
+    my $name = $file->filename;
     my $size = $file->size;
 
     $self->render(text => "File: $name [$size]");

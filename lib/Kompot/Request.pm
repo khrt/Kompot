@@ -12,10 +12,10 @@ use URI::Escape;
 
 use HTTP::Body;
 use Stream::Buffered;
-use Hash::MultiValue;
 
 use base 'Kompot::Base';
 use Kompot::Attributes;
+use Kompot::Request::Upload;
 
 has env => {};
 has content_length => 0;
@@ -46,14 +46,23 @@ sub init {
     $self->_build_params;
 }
 
+
+sub params {
+    my $self = shift;
+    return $self->{params} || {};
+}
+
 sub param {
     my ($self, $param) = @_;
     return $self->{params}->{$param};
 }
 
-sub params {
-    my $self = shift;
-    return $self->{params} || {};
+sub uploads {
+
+}
+
+sub upload {
+
 }
 
 sub _set_route_params {
@@ -141,7 +150,7 @@ sub _parse_body {
         $input->seek(0, 0);
     }
     else {
-        $buffer = Stream::Buffered->new($cl);
+        $buffer = Stream::Buffered->new($cl); # XXX
     }
 
     my $spin = 0;
@@ -155,7 +164,7 @@ sub _parse_body {
         $buffer->print($chunk) if $buffer;
 
         if ($read == 0 && $spin++ > 2000) {
-            Carp::croak "Bad Content-Length: maybe client disconnect? ($cl bytes remaining)";
+            croak "Bad Content-Length: maybe client disconnect? ($cl bytes remaining)";
         }
     }
 
@@ -169,14 +178,11 @@ sub _parse_body {
 
     $self->{'kompot.request.body'} = $body->param;
 
-    my @uploads = Hash::MultiValue->from_mixed($body->upload)->flatten;
-use Data::Dumper qw(Dumper);
-print STDOUT "upload\n";
-print STDOUT Dumper($body->upload);
-print STDOUT Dumper(\@uploads);
+    my $uploads = $body->upload;
     my @obj;
-    while (my($k, $v) = splice @uploads, 0, 2) {
-        push @obj, $k, $self->_make_upload($v);
+    for my $k (keys %$uploads) {
+        my $v = Kompot::Request::Upload->new($uploads->{$k});
+        push(@obj, $k, $v);
     }
 
     $self->env->{'kompot.request.upload'} = _array_to_multivalue_hash(@obj);

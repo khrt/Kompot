@@ -29,6 +29,10 @@ sub param {
     return $self->req->param($param);
 }
 
+sub upload {
+    # XXX ???
+}
+
 sub stash {
     my $self = shift;
     my $stash = $self->{stash} ||= {};
