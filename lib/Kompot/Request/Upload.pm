@@ -11,7 +11,7 @@ use Carp;
 use base 'Kompot::Base';
 use Kompot::Attributes;
 
-# Plack::Request::Upload
+# all methods from Plack::Request::Upload
 
 has filename     => sub { shift->{filename} };
 has size         => sub { shift->{size} };
@@ -39,16 +39,11 @@ sub basename {
     my $self = shift;
 
     if (not $self->{basename}) {
-        my $basename;
-        # File::Utils # TODO
-
-#        require File::Spec::Unix;
-#        my $basename = $self->{filename};
-#        $basename =~ s|\\|/|g;
-#        $basename = ( File::Spec::Unix->splitpath($basename) )[2];
-#        $basename =~ s|[^\w\.-]+|_|g;
-#        $self->{basename} = $basename;
-
+        require File::Spec::Unix;
+        my $basename = $self->{filename};
+        $basename =~ s|\\|/|g;
+        $basename = ( File::Spec::Unix->splitpath($basename) )[2];
+        $basename =~ s|[^\w\.-]+|_|g;
         $self->{basename} = $basename;
     }
 
