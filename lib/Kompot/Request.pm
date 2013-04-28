@@ -28,11 +28,9 @@ has uri    => undef;
 
 sub init {
     my $self = shift;
-    my $p    = @_ % 2 ? @_ : {@_};
-    my $env  = $self->{env} = $p->{env};
+    my $p = @_ % 2 ? @_ : {@_};
 
-    $self->{_read_position} = 0;
-    $self->{_chunk_size}    = 4096;
+    my $env = $p->{env};
 
     # set attrs
     $self->env($env);
@@ -43,56 +41,59 @@ sub init {
     $self->path($env->{PATH_INFO});
     $self->uri($env->{REQUEST_URI});
 
-    $self->_build_params;
+    return 1;
 }
 
 
 sub params {
     my $self = shift;
-    return $self->{params} || {};
+
+    $self->env->{'kompot.request.merged'} ||= do {
+        my $query = $self->_parse_params_query || {};
+        my $route = $self->_parse_params_route || {};
+        my $body = $self->_parse_params_body || {};
+
+        return { %$query, %$route, %$body, };
+    }
 }
 
 sub param {
     my ($self, $param) = @_;
-    return $self->{params}->{$param};
+    return $self->params->{$param};
 }
 
 sub uploads {
+    my $self = shift;
 
+    if ($self->env->{'kompot.request.upload'}) {
+        return $self->env->{'kompot.request.upload'};
+    }
+
+    $self->_parse_params_body;
+    return $self->env->{'kompot.request.upload'} || {};
 }
 
 sub upload {
-
+    my ($self, $param) = @_;
+    return $self->uploads->{$param};
 }
 
-sub _set_route_params {
+sub _parse_params_route {
     my ($self, $p) = @_;
 
-    $self->{'kompot.request.route'} = $p;
-    map { $p->{$_} = URI::Escape::uri_unescape($p->{$_}) } keys %$p;
-    $self->_build_params; # XXX TODO Rework it!
+    if ($p) {
+        map { $p->{$_} = URI::Escape::uri_unescape($p->{$_}) } keys %$p;
+        $self->env->{'kompot.request.route'} = $p;
+    }
+
+    return $self->env->{'kompot.request.route'} || {};
 }
 
-sub _build_params {
+sub _parse_params_query {
     my $self = shift;
 
-    $self->_parse_query;
-    $self->_parse_body;
-
-    # and merge everything
-    $self->{params} = {
-        %{ $self->{'kompot.request.query'} || {} },
-        %{ $self->{'kompot.request.route'} || {} },
-        %{ $self->{'kompot.request.body'}  || {} },
-    };
-
-    return $self->{params};
-}
-
-sub _parse_query {
-    my $self = shift;
-
-    return $self->{'kompot.request.query'} if $self->{'kompot.request.query'};
+    return $self->env->{'kompot.request.query'}
+        if $self->env->{'kompot.request.query'};
 
     # From Plack::Request
     my @query;
@@ -114,14 +115,13 @@ sub _parse_query {
         }
     }
 
-    my %params = _array_to_multivalue_hash(@query); # FIX not func!
-    $self->{'kompot.request.query'} = \%params;
+    my %params = _array_to_multivalue_hash(@query);
+    $self->env->{'kompot.request.query'} = \%params;
 
-    return \%params;
+    return $self->env->{'kompot.request.query'} || {};
 }
 
-# TODO make wrapper
-sub _parse_body {
+sub _parse_params_body {
     my $self = shift;
 
     my $ct = $self->content_type;
@@ -139,7 +139,7 @@ sub _parse_body {
     # HTTP::Body to do so. It will run the cleanup when the request
     # env is destroyed. That the object will not go out of scope by
     # the end of this sub we will store a reference here.
-    $self->{'kompot.request.http.body'} = $body;
+    $self->env->{'kompot.request.http.body'} = $body;
     $body->cleanup(1);
 
     my $input = $self->input;
@@ -176,7 +176,7 @@ sub _parse_body {
         $input->seek(0, 0);
     }
 
-    $self->{'kompot.request.body'} = $body->param;
+    $self->env->{'kompot.request.body'} = $body->param;
 
     my $uploads = $body->upload;
     my @obj;
@@ -187,7 +187,7 @@ sub _parse_body {
 
     $self->env->{'kompot.request.upload'} = _array_to_multivalue_hash(@obj);
 
-    return 1;
+    return $self->env->{'kompot.request.body'} || {};
 }
 
 # From Plack::Request
@@ -233,8 +233,8 @@ sub _array_to_multivalue_hash {
 sub cookie {
     my ($self, $name) = @_;
     $self->cookies or return;
-    return $self->{'kompot.cookie.parsed'}{$name} if $name;
-    return $self->{'kompot.cookie.parsed'};
+    return $self->env->{'kompot.cookie.parsed'}{$name} if $name;
+    return $self->env->{'kompot.cookie.parsed'};
 }
 
 # like Plack::Request::cookies
@@ -244,10 +244,10 @@ sub cookies {
     my $http_cookie = $self->env->{HTTP_COOKIE} or return;
 
     if (   $http_cookie
-        && $self->{'kompot.cookie.parsed'}
-        && $http_cookie eq $self->{'kompot.cookie.string'})
+        && $self->env->{'kompot.cookie.parsed'}
+        && $http_cookie eq $self->env->{'kompot.cookie.string'})
     {
-        return $self->{'kompot.cookie.parsed'};
+        return $self->env->{'kompot.cookie.parsed'};
     }
 
     my %cookies;
@@ -264,10 +264,10 @@ sub cookies {
         $cookies{$key} = $value if not exists $cookies{$key};
     }
 
-    $self->{'kompot.cookie.string'} = $http_cookie;
-    $self->{'kompot.cookie.parsed'} = \%cookies;
+    $self->env->{'kompot.cookie.string'} = $http_cookie;
+    $self->env->{'kompot.cookie.parsed'} = \%cookies;
 
-    return \%cookies;
+    return $self->env->{'kompot.cookie.parsed'} || {};
 }
 
 

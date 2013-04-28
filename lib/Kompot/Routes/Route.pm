@@ -79,7 +79,7 @@ sub parse_path_params {
     }
 
     $self->{_params} = \%p || {};
-    $self->app->request->_set_route_params($self->{_params});
+    $self->app->request->_parse_params_route($self->{_params});
 
     return $self->{_params};
 }
