@@ -59,6 +59,7 @@ sub to_string {
 
 sub _expires {
     my ($self, $expires) = @_;
+    return if not $expires;
     $expires = $self->_parse_duration($expires);
     $expires = $self->_epoch_to_gmtstring($expires);
     return $expires;
