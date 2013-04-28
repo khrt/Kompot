@@ -185,7 +185,8 @@ sub _parse_params_body {
         push(@obj, $k, $v);
     }
 
-    $self->env->{'kompot.request.upload'} = _array_to_multivalue_hash(@obj);
+    my %uploads = _array_to_multivalue_hash(@obj);
+    $self->env->{'kompot.request.upload'} = \%uploads;
 
     return $self->env->{'kompot.request.body'} || {};
 }

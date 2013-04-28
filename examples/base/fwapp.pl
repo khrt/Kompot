@@ -132,8 +132,14 @@ post '/upload' => sub {
     my $file = $self->upload('file');
     my $name = $file->filename;
     my $size = $file->size;
+    my $basename = $file->basename;
 
-    $self->render(text => "File: $name [$size]");
+    my $content;
+    open my $fh, '<', $file->tempname;
+    $content .= $_ while <$fh>;
+    close $fh;
+
+    $self->render(text => "File: `$name` ($basename) [$size]\n\n$content");
 };
 
 app->development(1);

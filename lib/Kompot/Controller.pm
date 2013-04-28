@@ -30,7 +30,8 @@ sub param {
 }
 
 sub upload {
-    # XXX ???
+    my ($self, $param) = @_;
+    return $self->req->upload($param);
 }
 
 sub stash {
