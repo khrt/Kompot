@@ -7,11 +7,15 @@
   <h1><%= $head %></h1>
   <p><%= $p %></p>
   <pre><%= dummy() %></pre>
-% if (1) {
+  <span><%= 'ok' if 1 %></span>
+%# it's a comment line
+  <p>
+% if ($title) {
 text
 % }
 % else {
 else text
 % }
+  </p>
 </body>
 </html>

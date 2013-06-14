@@ -9,7 +9,8 @@ use v5.12;
 use Carp;
 use DDP { output => 'stdout' };
 use File::Spec::Functions 'catfile';
-use Mojo::Template;
+#use Mojo::Template;
+use Kompot::Template;
 
 use base 'Kompot::Base';
 use Kompot::Attributes;
@@ -117,7 +118,8 @@ my $_H = $self->app->renderer->helpers;
 
     $prepend =~ s/\R//gs;
 
-    my $mt = Mojo::Template->new(encoding => 'UTF-8');
+#    my $mt = Mojo::Template->new(encoding => 'UTF-8');
+    my $mt = Kompot::Template->new(encoding => 'UTF-8');
     $mt->prepend($prepend);
 
     my $out;

@@ -20,6 +20,7 @@ sub init {
 
     return if not $c;
     $self->c($c);
+    $self->register_default_helpers;
 }
 
 sub register_default_helpers { }
